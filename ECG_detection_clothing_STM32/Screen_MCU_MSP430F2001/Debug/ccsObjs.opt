@@ -1,0 +1,6 @@
+"./DM130036.obj"
+"./I2C.obj"
+"./TIM.obj"
+"./blink.obj"
+"../lnk_msp430f2001.cmd"
+-llibc.a

@@ -1,0 +1,456 @@
+C51 COMPILER V9.54   SCDRIVER_ESP8266                                                      10/29/2022 17:36:01 PAGE 1   
+C51 COMPILER V9.54, COMPILATION OF MODULE SCDRIVER_ESP8266
+OBJECT MODULE PLACED IN ..\Output\SCDriver_ESP8266.obj
+COMPILER INVOKED BY: E:\Keil5\C51\BIN\C51.EXE ..\Drivers\SCDriver_ESP8266\C\SCDriver_ESP8266.c LARGE OBJECTADVANCED OPTI
+                    -MIZE(8,SIZE) BROWSE INCDIR(..\FWLib\SC95F_Lib\inc;..\User;..\Bank1;..\Bank2;..\Bank3) DEFINE(SC95F8x3x) DEBUG PRINT(..\L
+                    -ist\SCDriver_ESP8266.lst) TABS(2) OBJECT(..\Output\SCDriver_ESP8266.obj)
+line level    source
+   1         
+   2         
+   3         
+   4         
+   5         
+   6         
+   7         
+   8         
+   9         
+  10          #include"..\H\SCDriver_ESP8266.h"
+  11          #include "SC_Init.h"  
+  12          #define SCD_ESP8266_UART0_TIMER_SELECT  UART0_CLOCK_TIMER1  
+             -值
+  13          
+  14          #define IO_NULL  0xFF00
+  15          #define  SCD_IO_PORT(IO)    (uint8_t)(IO>>8)
+  16          #define  SCD_IO_PIN(IO)     (uint8_t)(IO)
+  17          
+  18          #define SCD_ESP8266_UART0   0x00
+  19          #define SCD_ESP8266_UART1   0x01
+  20          #define SCD_ESP8266_MODE_STA  '1'
+  21          #define SCD_ESP8266_MODE_AP     '2'
+  22          #define SCD_ESP8266_MODE_APSTA  '3'
+  23          #define SCD_ESP8266_OPEN       0
+  24          #define SCD_ESP8266_WPA_PSK    2
+  25          #define SCD_ESP8266_WPA2_PSK     3
+  26          #define SCD_ESP8266_WPA_WPA2_PSK 4
+  27         
+  28          unsigned char xdata *SCD_ESP8266_BuffPoint;
+  29          unsigned int SCD_ESP8266_BuffLength;
+  30          unsigned char SCD_ESP8266_BUFF_Number=0;
+  31          bit SCD_ESP8266_UartReceFlag = 0;
+  32          bit SCD_ESP8266_UartSendFlag = 0;
+  33         
+  34         
+  35         
+  36         
+  37         
+  38         
+  39         
+  40         
+  41         
+  42          void SCD_ESP8266_PinMode(uint16_t IO_Pxx, GPIO_Mode_TypeDef IO_Pxx_Mode)
+  43          {
+  44   1        if(IO_Pxx != IO_NULL)
+  45   1        {
+  46   2          GPIO_Init(SCD_IO_PORT(IO_Pxx), SCD_IO_PIN(IO_Pxx), IO_Pxx_Mode);  
+  47   2        } 
+  48   1      }
+  49         
+  50         
+  51         
+  52         
+  53         
+  54         
+  55          void SCD_ESP8266_Delay(uint16_t n)
+  56          {
+  57   1        uint16_t  i,j;
+  58   1        for(i=0;i<n;i++)
+  59   1          for(j=0;j<2000;j++);
+  60   1      }
+  61         
+  62         
+  63         
+  64         
+  65         
+  66         
+  67          void SCD_ESP8266_Init(unsigned char xdata *buffpoint,unsigned int bufflength)
+  68          {
+  69   1        SCD_ESP8266_PinMode(SCD_ESP8266_TXD_INIT, GPIO_MODE_IN_PU);
+  70   1        UART0_Init(SCD_ESP8266_FSYS, SCD_ESP8266_BAUD, UART0_Mode_10B, SCD_ESP8266_UART0_TIMER_SELECT, UART0_RX_E
+             -NABLE);
+  71   1       
+  72   1        UART0_ITConfig(ENABLE, LOW); 
+  73   1        SCD_ESP8266_BuffPoint = buffpoint;
+  74   1        SCD_ESP8266_BuffLength= bufflength;
+  75   1      
+  76   1      }
+  77         
+  78         
+  79         
+  80         
+  81         
+  82         
+  83          void SCD_ESP8266_Uart_Send_Byte(unsigned char value)
+  84          {
+  85   1        SBUF = value;
+  86   1        while(!SCD_ESP8266_UartSendFlag);
+  87   1        SCD_ESP8266_UartSendFlag = 0;
+  88   1      }
+  89         
+  90         
+  91         
+  92         
+  93         
+  94         
+  95          void SCD_ESP8266_Uart_Send_String(unsigned char *string)
+  96          {
+  97   1        while(*string)
+  98   1        {
+  99   2          SCD_ESP8266_Uart_Send_Byte(*string++);
+ 100   2        }
+ 101   1      }
+ 102         
+ 103         
+ 104         
+ 105         
+ 106         
+ 107         
+ 108          void SCD_ESP8266_MODE(unsigned char ModeSelect)
+ 109          {
+ 110   1        SCD_ESP8266_Uart_Send_String("AT+CWMODE=");
+ 111   1        SCD_ESP8266_Uart_Send_Byte(ModeSelect);
+ 112   1        SCD_ESP8266_Uart_Send_Byte('\r');
+ 113   1        SCD_ESP8266_Uart_Send_Byte('\n');
+ 114   1      }
+ 115         
+ 116         
+ 117         
+ 118         
+ 119         
+ 120         
+ 121          void SCD_ESP8266_CWLAP()
+ 122          {
+ 123   1        SCD_ESP8266_Uart_Send_String("AT+CWLAP\r\n");
+ 124   1      }
+ 125         
+ 126         
+ 127         
+ 128         
+ 129         
+ 130         
+ 131          void SCD_ESP8266_CWQAP()
+ 132          {
+ 133   1        SCD_ESP8266_Uart_Send_String("AT+CWQAP\r\n"); 
+ 134   1      }
+ 135          
+ 136         
+ 137         
+ 138         
+ 139         
+ 140         
+ 141         
+ 142          void SCD_ESP8266_CWSAP_READ()
+ 143          {
+ 144   1        SCD_ESP8266_Uart_Send_String("AT+CWSAP?\r\n");
+ 145   1      }
+ 146         
+ 147         
+ 148         
+ 149         
+ 150         
+ 151         
+ 152         
+ 153         
+ 154         
+ 155         
+ 156         
+ 157          void SCD_ESP8266_CWSAP(unsigned char *ssid,unsigned char *pwd,unsigned char chl,unsigned char ecn)
+ 158          {
+ 159   1        SCD_ESP8266_Uart_Send_String("AT+CWSAP=\"");
+ 160   1        SCD_ESP8266_Uart_Send_String(ssid);
+ 161   1        SCD_ESP8266_Uart_Send_Byte('\"');
+ 162   1        SCD_ESP8266_Uart_Send_Byte(',');
+ 163   1        SCD_ESP8266_Uart_Send_Byte('\"');
+ 164   1        SCD_ESP8266_Uart_Send_String(pwd);
+ 165   1        SCD_ESP8266_Uart_Send_Byte('\"');
+ 166   1        SCD_ESP8266_Uart_Send_Byte(',');
+ 167   1        SCD_ESP8266_Uart_Send_Byte(chl+0x30);
+ 168   1        SCD_ESP8266_Uart_Send_Byte(',');
+ 169   1        SCD_ESP8266_Uart_Send_Byte(ecn+0x30);
+ 170   1        SCD_ESP8266_Uart_Send_Byte('\r');
+ 171   1        SCD_ESP8266_Uart_Send_Byte('\n');
+ 172   1      }
+ 173         
+ 174         
+ 175         
+ 176         
+ 177         
+ 178         
+ 179         
+ 180         
+ 181         
+ 182          void SCD_ESP8266_CWJAP(unsigned char *ssid,unsigned char *pwd) 
+ 183          {
+ 184   1        SCD_ESP8266_Uart_Send_String("AT+CWJAP=\"");
+ 185   1        SCD_ESP8266_Uart_Send_String(ssid);
+ 186   1        SCD_ESP8266_Uart_Send_Byte('\"');
+ 187   1        SCD_ESP8266_Uart_Send_Byte(',');
+ 188   1        SCD_ESP8266_Uart_Send_Byte('\"');
+ 189   1        SCD_ESP8266_Uart_Send_String(pwd);
+ 190   1        SCD_ESP8266_Uart_Send_Byte('\"');
+ 191   1        SCD_ESP8266_Uart_Send_Byte('\r');
+ 192   1        SCD_ESP8266_Uart_Send_Byte('\n');
+ 193   1      }
+ 194         
+ 195         
+ 196         
+ 197         
+ 198         
+ 199         
+ 200          void SCD_ESP8266_CIFSR()
+ 201          {
+ 202   1        SCD_ESP8266_Uart_Send_String("AT+CIFSR\r\n"); 
+ 203   1      }
+ 204         
+ 205         
+ 206         
+ 207         
+ 208         
+ 209         
+ 210         
+ 211         
+ 212         
+ 213          void SCD_ESP8266_AP_ServerSet(unsigned char server,unsigned char *port_t)  
+ 214          {
+ 215   1        SCD_ESP8266_Uart_Send_String("AT+CIPSERVER=");
+ 216   1        SCD_ESP8266_Uart_Send_Byte(server+0X30);
+ 217   1        SCD_ESP8266_Uart_Send_Byte(',');
+ 218   1        SCD_ESP8266_Uart_Send_String(port_t);
+ 219   1        SCD_ESP8266_Uart_Send_Byte('\r');
+ 220   1        SCD_ESP8266_Uart_Send_Byte('\n');
+ 221   1      }
+ 222         
+ 223         
+ 224         
+ 225         
+ 226         
+ 227         
+ 228          void SCD_ESP8266_CIPMODE(unsigned char select)
+ 229          {
+ 230   1        SCD_ESP8266_Uart_Send_String("AT+CIPMODE=");
+ 231   1        SCD_ESP8266_Uart_Send_Byte(select+0X30);
+ 232   1        SCD_ESP8266_Uart_Send_Byte('\r');
+ 233   1        SCD_ESP8266_Uart_Send_Byte('\n');
+ 234   1      }
+ 235         
+ 236         
+ 237         
+ 238         
+ 239         
+ 240         
+ 241          void SCD_ESP8266_RST()
+ 242          {
+ 243   1        SCD_ESP8266_Uart_Send_String("AT+RST\r\n"); 
+ 244   1      }
+ 245         
+ 246         
+ 247         
+ 248         
+ 249         
+ 250         
+ 251          void SCD_ESP8266_VIEW()
+ 252          {
+ 253   1        SCD_ESP8266_Uart_Send_String("AT+GMR\n");
+ 254   1      }
+ 255         
+ 256         
+ 257         
+ 258         
+ 259         
+ 260         
+ 261         
+ 262         
+ 263         
+ 264         
+ 265         
+ 266          void SCD_ESP8266_AP_Init(unsigned char *ssid,unsigned char *pwd,unsigned char chl,unsigned char ecn)
+             -SP8266设置为AP模式进行工作
+ 267          {
+ 268   1        SCD_ESP8266_MODE(SCD_ESP8266_MODE_AP);   
+ 269   1        SCD_ESP8266_Delay(1000);
+ 270   1        SCD_ESP8266_RST();
+ 271   1        SCD_ESP8266_Delay(3000)
+ 272   1        SCD_ESP8266_CWSAP(ssid,pwd,chl,ecn);
+ 273   1        SCD_ESP8266_Delay(1000);
+ 274   1        SCD_ESP8266_Uart_Send_String("AT+CIPMUX=1\r\n")
+ 275   1        SCD_ESP8266_Delay(1000);
+ 276   1      }
+ 277         
+ 278         
+ 279         
+ 280         
+ 281         
+ 282         
+ 283         
+ 284         
+ 285         
+ 286          void SCD_ESP8266_STA_LinkServer(unsigned char *IP_t,unsigned char *port_t
+ 287          {
+ 288   1        SCD_ESP8266_Uart_Send_String("AT+CIPSTART=\"TCP\"");
+ 289   1        SCD_ESP8266_Uart_Send_Byte(',');
+ 290   1        SCD_ESP8266_Uart_Send_Byte('\"');
+ 291   1        SCD_ESP8266_Uart_Send_String(IP_t);
+ 292   1        SCD_ESP8266_Uart_Send_Byte('\"');
+ 293   1        SCD_ESP8266_Uart_Send_Byte(',');
+ 294   1        SCD_ESP8266_Uart_Send_String(port_t);
+ 295   1        SCD_ESP8266_Uart_Send_Byte('\r');
+ 296   1        SCD_ESP8266_Uart_Send_Byte('\n');
+ 297   1        SCD_ESP8266_Delay(1000);
+ 298   1      }
+ 299         
+ 300         
+ 301         
+ 302         
+ 303         
+ 304         
+ 305         
+ 306         
+ 307         
+ 308          void SCD_ESP8266_STA_Init(unsigned char *ssid,unsigned char *pwd)
+ 309          {
+ 310   1        SCD_ESP8266_MODE(SCD_ESP8266_MODE_STA);  
+ 311   1        SCD_ESP8266_Delay(1000);
+ 312   1        SCD_ESP8266_RST();
+ 313   1        SCD_ESP8266_Delay(3000)
+ 314   1        SCD_ESP8266_CWJAP(ssid, pwd);
+ 315   1        SCD_ESP8266_Delay(1000);
+ 316   1      }
+ 317         
+ 318         
+ 319         
+ 320         
+ 321         
+ 322         
+ 323         
+ 324         
+ 325         
+ 326         
+ 327          void SCD_ESP8266_AP_SendData(unsigned char Addr,unsigned char DataLength,unsigned char*Data)
+ 328          {
+ 329   1        SCD_ESP8266_Uart_Send_String("AT+CIPSEND=");
+ 330   1        SCD_ESP8266_Uart_Send_Byte(Addr+0X30);
+ 331   1        SCD_ESP8266_Uart_Send_Byte(',');
+ 332   1        SCD_ESP8266_Uart_Send_Byte(DataLength+0X30);
+ 333   1        SCD_ESP8266_Uart_Send_Byte('\r');
+ 334   1        SCD_ESP8266_Uart_Send_Byte('\n');
+ 335   1        SCD_ESP8266_Delay(10);
+ 336   1        SCD_ESP8266_Uart_Send_String(Data);
+ 337   1      }
+ 338         
+ 339         
+ 340         
+ 341         
+ 342         
+ 343         
+ 344         
+ 345         
+ 346         
+ 347          void SCD_ESP8266_STA_SendData(unsigned char DataLength,unsigned char*Data)
+ 348          {
+ 349   1        SCD_ESP8266_Uart_Send_String("AT+CIPSEND=");
+ 350   1        SCD_ESP8266_Uart_Send_Byte(DataLength+0X30);
+ 351   1        SCD_ESP8266_Uart_Send_Byte('\r');
+ 352   1        SCD_ESP8266_Uart_Send_Byte('\n');
+ 353   1        SCD_ESP8266_Delay(10);
+ 354   1        SCD_ESP8266_Uart_Send_String(Data);
+ 355   1      }
+ 356         
+ 357         
+ 358         
+ 359         
+ 360         
+ 361         
+ 362         
+ 363         
+ 364          void SCD_ESP8266_STA_PassThrough(FunctionalState Start)
+ 365          {
+ 366   1        if(Start)
+ 367   1        {
+ 368   2           SCD_ESP8266_Uart_Send_String("AT+CIPMODE=1\r\n");
+ 369   2           SCD_ESP8266_Delay(1000);
+ 370   2           SCD_ESP8266_Uart_Send_String("AT+CIPSEND\r\n");  
+ 371   2           SCD_ESP8266_Delay(1000);
+ 372   2        }
+ 373   1        else
+ 374   1        {
+ 375   2           SCD_ESP8266_Uart_Send_String("+++");
+ 376   2        }
+ 377   1        
+ 378   1      }
+ 379         
+ 380         
+ 381         
+ 382         
+ 383         
+ 384         
+ 385          void SCD_ESP8266_BUFF_Clear()
+ 386          {
+ 387   1        unsigned char i;
+ 388   1        for(i=0;i<SCD_ESP8266_BuffLength;i++)
+ 389   1        {
+ 390   2           SCD_ESP8266_BuffPoint[i] = 0;
+ 391   2        }
+ 392   1        SCD_ESP8266_BUFF_Number=0;
+ 393   1      }
+ 394         
+ 395         
+ 396         
+ 397         
+ 398         
+ 399         
+ 400          void SCD_ESP8266_BUFF_Update()
+ 401          {
+ 402   1          SCD_ESP8266_BUFF_Number++;
+ 403   1        if(SCD_ESP8266_BUFF_Number>=SCD_ESP8266_BuffLength)
+ 404   1        {
+ 405   2          SCD_ESP8266_BUFF_Number = 0;
+ 406   2          SCD_ESP8266_BUFF_Clear()
+ 407   2        }
+ 408   1      }
+ 409         
+ 410         
+ 411         
+ 412         
+ 413         
+ 414         
+ 415          void SCD_ESP8266_InterruptWork()
+ 416          {
+ 417   1        if(UART0_GetFlagStatus(UART0_FLAG_RI))
+ 418   1        {
+ 419   2          UART0_ClearFlag(UART0_FLAG_RI);
+ 420   2          SCD_ESP8266_UartReceFlag = 1;
+ 421   2          SCD_ESP8266_BuffPoint[SCD_ESP8266_BUFF_Number] = UART0_ReceiveData8();
+ 422   2          SCD_ESP8266_BUFF_Update();
+ 423   2        }
+ 424   1        if(UART0_GetFlagStatus(UART0_FLAG_TI))
+ 425   1        {
+ 426   2          UART0_ClearFlag(UART0_FLAG_TI);
+ 427   2          SCD_ESP8266_UartSendFlag = 1;
+ 428   2        }
+ 429   1      }
+ 430          
+ 431          
+ 432                         
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1024    ----
+   CONSTANT SIZE    =    197    ----
+   XDATA SIZE       =      5      50
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      2    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

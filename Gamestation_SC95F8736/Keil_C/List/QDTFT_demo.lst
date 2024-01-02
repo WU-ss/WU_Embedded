@@ -1,0 +1,128 @@
+C51 COMPILER V9.54   QDTFT_DEMO                                                            10/29/2022 17:36:07 PAGE 1   
+C51 COMPILER V9.54, COMPILATION OF MODULE QDTFT_DEMO
+OBJECT MODULE PLACED IN ..\Output\QDTFT_demo.obj
+COMPILER INVOKED BY: E:\Keil5\C51\BIN\C51.EXE ..\Bank1\QDTFT_demo.c LARGE OBJECTADVANCED OPTIMIZE(8,SIZE) BROWSE INCDIR(
+                    -..\FWLib\SC95F_Lib\inc;..\User;..\Bank1;..\Bank2;..\Bank3) DEFINE(SC95F8x3x) DEBUG PRINT(..\List\QDTFT_demo.lst) TABS(2)
+                    - OBJECT(..\Output\QDTFT_demo.obj)
+line level    source
+   1          
+   2          #include "SC_Init.h" 
+   3          #include "Lcd_Driver.h"
+   4          #include "GUI.h"
+   5          #include "Delay.h"
+   6          #include "Picture.h"
+   7          #include "QDTFT_demo.h"
+   8          unsigned char Num[10]={0,1,2,3,4,5,6,7,8,9};
+   9          void Redraw_Mainmenu(void)
+  10          {
+  11   1      
+  12   1        Lcd_Clear(GRAY0);
+  13   1        
+  14   1        Gui_DrawFont_GBK16(16,0,BLUE,GRAY0,"电子技术");
+  15   1        Gui_DrawFont_GBK16(16,20,RED,GRAY0,"液晶测试程序");
+  16   1      
+  17   1        DisplayButtonUp(15,38,113,58);
+  18   1        Gui_DrawFont_GBK16(16,40,YELLOW,GRAY0,"颜色填充测试");
+  19   1      
+  20   1        DisplayButtonUp(15,68,113,88);
+  21   1        Gui_DrawFont_GBK16(16,70,BLUE,GRAY0,"文字显示测试");
+  22   1      
+  23   1        DisplayButtonUp(15,98,113,118);
+  24   1        Gui_DrawFont_GBK16(16,100,RED,GRAY0,"图片显示测试");
+  25   1        Delay_ms(1500);
+  26   1      }
+  27          
+  28          void Num_Test(void)
+  29          {
+  30   1        u8 i=0;
+  31   1        Lcd_Clear(GRAY0);
+  32   1        Gui_DrawFont_GBK16(16,20,RED,GRAY0,"Num Test");
+  33   1        Delay_ms(1000);
+  34   1        Lcd_Clear(GRAY0);
+  35   1      
+  36   1        for(i=0;i<10;i++)
+  37   1        {
+  38   2        Gui_DrawFont_Num32((i%3)*40,32*(i/3)+5,RED,GRAY0,Num[i+1]);
+  39   2        Delay_ms(100);
+  40   2        }
+  41   1        
+  42   1      }
+  43          
+  44          void Font_Test(void)
+  45          {
+  46   1        Lcd_Clear(GRAY0);
+  47   1        Gui_DrawFont_GBK16(16,10,BLUE,GRAY0,"文字显示测试");
+  48   1      
+  49   1        Delay_ms(1000);
+  50   1        Lcd_Clear(GRAY0);
+  51   1        Gui_DrawFont_GBK16(16,30,YELLOW,GRAY0,"电子技术");
+  52   1        Gui_DrawFont_GBK16(16,50,BLUE,GRAY0,"专注液晶批发");
+  53   1        Gui_DrawFont_GBK16(16,70,RED,GRAY0, "全程技术支持");
+  54   1        Gui_DrawFont_GBK16(0,100,BLUE,GRAY0,"Tel:11111111111");
+  55   1        Gui_DrawFont_GBK16(0,130,RED,GRAY0, "QQ:111111111");  
+  56   1        Delay_ms(1800); 
+  57   1      }
+  58          
+  59          void Color_Test(void)
+  60          {
+  61   1        u8 i=1;
+  62   1        Lcd_Clear(GRAY0);
+  63   1        
+  64   1        Gui_DrawFont_GBK16(20,10,BLUE,GRAY0,"Color Test");
+  65   1        Delay_ms(200);
+  66   1      
+  67   1        while(i--)
+  68   1        {
+  69   2          Lcd_Clear(WHITE);
+  70   2          Lcd_Clear(BLACK);
+  71   2          Lcd_Clear(RED);
+  72   2            Lcd_Clear(GREEN);
+  73   2            Lcd_Clear(BLUE);
+  74   2        }   
+  75   1      }
+  76          
+  77         
+  78          void showimage(const unsigned char *p)
+  79          {
+  80   1          int i,j,k; 
+  81   1        unsigned char picH,picL;
+  82   1        Lcd_Clear(WHITE);
+  83   1        
+  84   1        for(k=0;k<3;k++)
+  85   1        {
+  86   2            for(j=0;j<3;j++)
+  87   2          { 
+  88   3            Lcd_SetRegion(40*j,40*k,40*j+39,40*k+39);  
+  89   3              for(i=0;i<40*40;i++)
+  90   3             {  
+  91   4              picL=*(p+i*2); 
+  92   4              picH=*(p+i*2+1);        
+  93   4              LCD_WriteData_16Bit(picH<<8|picL);              
+  94   4             }  
+  95   3           }
+  96   2        }   
+  97   1      }
+  98          void QDTFT_Test_Demo(void)
+  99          {
+ 100   1        Lcd_Init();       
+ 101   1        Redraw_Mainmenu()
+ 102   1        Color_Test()
+ 103   1        Num_Test()
+ 104   1        Font_Test()
+ 105   1        showimage(gImage_qq)
+ 106   1        Delay_ms(1200); 
+ 107   1      }
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1063    ----
+   CONSTANT SIZE    =    136    ----
+   XDATA SIZE       =   3210      13
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

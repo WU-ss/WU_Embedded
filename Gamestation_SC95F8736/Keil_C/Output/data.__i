@@ -1,0 +1,1 @@
+"..\Bank2\data.c" LARGE OBJECTADVANCED OPTIMIZE (8,SIZE) BROWSE INCDIR(..\FWLib\SC95F_Lib\inc;..\User;..\Bank1) DEFINE (SC95F8x3x) DEBUG PRINT(..\List\data.lst) OBJECT(..\Output\data.obj)

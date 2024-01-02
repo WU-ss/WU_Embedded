@@ -1,0 +1,209 @@
+C51 COMPILER V9.54   SC95F_UART0                                                           04/19/2023 15:54:52 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE SC95F_UART0
+OBJECT MODULE PLACED IN ..\Output\sc95f_uart0.obj
+COMPILER INVOKED BY: D:\Keil5\C51\BIN\C51.EXE ..\FWLib\SC95F_Lib\src\sc95f_uart0.c LARGE OBJECTADVANCED OPTIMIZE(8,SIZE)
+                    - BROWSE INCDIR(..\FWLib\SC95F_Lib\inc;..\User;..\Bank1;..\Bank2;..\Bank3) DEFINE(SC95F8x3x) DEBUG PRINT(..\List\sc95f_ua
+                    -rt0.lst) OBJECT(..\Output\sc95f_uart0.obj)
+
+line level    source
+
+   1          //************************************************************
+   2          //  Copyright (c) 
+   3          //      文件名称:                       sc95f_uart0.c
+   4          //      作者:                                   赛元应用团队
+   5          //      模块功能:                       UART0固件库函数C文件
+   6          //  最后更正日期:       2022年7月20日
+   7          //      版本:                           V1.10002
+   8          //  说明:                               该文件仅适用于SC95F系列芯片
+   9          //*************************************************************
+  10          
+  11          #include "sc95f_uart0.h"
+  12          
+  13          #if !defined (SC95R751)
+  14          /**************************************************
+  15          *函数名称:void UART0_DeInit(void)
+  16          *函数功能:UART0相关寄存器复位至缺省值
+  17          *入口参数:void
+  18          *出口参数:void
+  19          **************************************************/
+  20          void UART0_DeInit(void)
+  21          {
+  22   1        SCON = 0X00;
+  23   1        SBUF = 0X00;
+  24   1        PCON &= 0X7F;
+  25   1        IE &= 0XEF;
+  26   1        IP &= 0XEF;
+  27   1      }
+  28          
+  29          /**************************************************
+  30          *函数名称:void UART0_Init(uint32_t Uart0Fsys, uint32_t BaudRate, UART0_Mode_Typedef Mode,
+  31                                                             UART0_Clock_Typedef ClockMode, UART0_RX_Typedef RxMode)
+  32          *函数功能:UART0初始化配置函数
+  33          *入口参数:
+  34          uint32_t:Uart0Fsys:系统时钟频率
+  35          uint32_t:BaudRate:波特率
+  36          UART0_Mode_Typedef:Mode:UART0工作模式
+  37          UART0_Clock_Typedef:ClockMode:波特率时钟源（TIMER1/TIMER2）
+  38          UART0_RX_Typedef:RxMode:接收允许选择
+  39          *出口参数:void
+  40          **************************************************/
+  41          void UART0_Init(uint32_t Uart0Fsys, uint32_t BaudRate, UART0_Mode_Typedef Mode,
+  42                          UART0_Clock_Typedef ClockMode, UART0_RX_Typedef RxMode)
+  43          {
+  44   1        SCON = SCON & 0X2F | Mode | RxMode; //设置UART工作模式,设置接收允许位
+  45   1      
+  46   1        if (Mode == UART0_Mode_8B)
+  47   1        {
+  48   2          if (BaudRate == UART0_BaudRate_FsysDIV12)
+  49   2          {
+  50   3            SCON &= 0XDF;
+  51   3          }
+  52   2          else if (BaudRate == UART0_BaudRate_FsysDIV4)
+  53   2          {
+C51 COMPILER V9.54   SC95F_UART0                                                           04/19/2023 15:54:52 PAGE 2   
+
+  54   3            SCON |= 0X20;
+  55   3          }
+  56   2        }
+  57   1        else
+  58   1        {
+  59   2      #if defined(SC95F8x2x) || defined(SC95F7x2x)
+                  TXINX = 0X02;
+              #endif
+  62   2          TXCON = (TXCON & 0xCF) | ClockMode; //设置波特率时钟源
+  63   2      
+  64   2          if (ClockMode == UART0_CLOCK_TIMER1)
+  65   2          {
+  66   3            TH1 = (Uart0Fsys / BaudRate) / 256;
+  67   3            TL1 = (Uart0Fsys / BaudRate) % 256;
+  68   3            TR1 = 0;
+  69   3          }
+  70   2          else if (ClockMode == UART0_CLOCK_TIMER2)
+  71   2          {
+  72   3                              TXINX = 0X02;
+  73   3                              RCAPXH = (Uart0Fsys / BaudRate) / 256;
+  74   3            RCAPXL = (Uart0Fsys / BaudRate) % 256;
+  75   3            TRX = 1;
+  76   3          }
+  77   2        }
+  78   1      }
+  79          
+  80          /*****************************************************
+  81          *函数名称:void UART0_SendData8(uint8_t Data)
+  82          *函数功能:UART0发送8位数据
+  83          *入口参数:
+  84          uint8_t:Data:发送的数据
+  85          *出口参数:void
+  86          *****************************************************/
+  87          void UART0_SendData8(uint8_t Data)
+  88          {
+  89   1        SBUF = Data;
+  90   1      }
+  91          
+  92          /**************************************************
+  93          *函数名称:uint8_t UART0_ReceiveData8(void)
+  94          *函数功能:获得SBUF中的值
+  95          *入口参数:void
+  96          *出口参数:
+  97          uint8_t:接收的数据
+  98          **************************************************/
+  99          uint8_t UART0_ReceiveData8(void)
+ 100          {
+ 101   1        return SBUF;
+ 102   1      }
+ 103          
+ 104          /*****************************************************
+ 105          *函数名称:void UART0_SendData9(uint16_t Data)
+ 106          *函数功能:UART0发送9位数据
+ 107          *入口参数:
+ 108          uint16_t:Data:发送的数据
+ 109          *出口参数:void
+ 110          *****************************************************/
+ 111          void UART0_SendData9(uint16_t Data)
+ 112          {
+ 113   1        uint8_t Data_9Bit;
+ 114   1        Data_9Bit = (Data >> 8);
+ 115   1      
+C51 COMPILER V9.54   SC95F_UART0                                                           04/19/2023 15:54:52 PAGE 3   
+
+ 116   1        if (Data_9Bit)
+ 117   1        {
+ 118   2          SCON |= 0X08;
+ 119   2        }
+ 120   1        else
+ 121   1        {
+ 122   2          SCON &= 0XF7;
+ 123   2        }
+ 124   1      
+ 125   1        SBUF = (uint8_t)Data;
+ 126   1      }
+ 127          
+ 128          /**************************************************
+ 129          *函数名称:uint16_t UART0_ReceiveData9(void)
+ 130          *函数功能:获得SBUF中的值及第九位的值
+ 131          *入口参数:void
+ 132          *出口参数:
+ 133          uint16_t:SBUF中的值及第九位的值
+ 134          **************************************************/
+ 135          uint16_t UART0_ReceiveData9(void)
+ 136          {
+ 137   1        uint16_t Data9;
+ 138   1        Data9 = SBUF + ((uint16_t)(SCON & 0X04) << 6);
+ 139   1        SCON &= 0XFB;
+ 140   1        return Data9;
+ 141   1      }
+ 142          
+ 143          /*****************************************************
+ 144          *函数名称:void UART0_ITConfig(FunctionalState NewState, PriorityStatus Priority)
+ 145          *函数功能:UART0中断初始化
+ 146          *入口参数:
+ 147          FunctionalState:NewState:中断使能/关闭选择
+ 148          PriorityStatus:Priority:中断优先级选择
+ 149          *出口参数:void
+ 150          *****************************************************/
+ 151          void UART0_ITConfig(FunctionalState NewState, PriorityStatus Priority)
+ 152          {
+ 153   1        if (NewState == DISABLE)
+ 154   1        {
+ 155   2          EUART = 0;
+ 156   2        }
+ 157   1        else
+ 158   1        {
+ 159   2          EUART = 1;
+ 160   2        }
+ 161   1      
+ 162   1        //设置中断优先级
+ 163   1        if (Priority == LOW)
+ 164   1        {
+ 165   2          IPUART = 0;
+ 166   2        }
+ 167   1        else
+ 168   1        {
+ 169   2          IPUART = 1;
+ 170   2        }
+ 171   1      }
+ 172          #endif
+ 173          
+ 174          /******************* (C) COPYRIGHT 2020 SinOne Microelectronics *****END OF FILE****/
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+C51 COMPILER V9.54   SC95F_UART0                                                           04/19/2023 15:54:52 PAGE 4   
+
+   CODE SIZE        =    296    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----      11
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

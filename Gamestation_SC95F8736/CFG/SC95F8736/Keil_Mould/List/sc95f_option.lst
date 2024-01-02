@@ -1,0 +1,191 @@
+C51 COMPILER V9.00   SC95F_OPTION                                                          07/01/2021 08:32:27 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE SC95F_OPTION
+OBJECT MODULE PLACED IN ..\Output\sc95f_option.obj
+COMPILER INVOKED BY: D:\Program Files (x86)\keil\C51\BIN\C51.EXE ..\FWLib\SC95F_Lib\src\sc95f_option.c LARGE OMF2 BROWSE
+                    - INCDIR(..\FWLib\SC95F_Lib\inc;..\User) DEFINE(SC95F8x2x) DEBUG PRINT(..\List\sc95f_option.lst) OBJECT(..\Output\sc95f_o
+                    -ption.obj)
+
+line level    source
+
+   1          //************************************************************
+   2          //  Copyright (c) 深圳市赛元微电子有限公司
+   3          //      文件名称        : sc95f_option.c
+   4          //      作者            :
+   5          //      模块功能        : Customer Option寄存器配置C文件
+   6          //      局部函数列表:
+   7          //  最后更正日期: 2020/8/13
+   8          //      版本            : V1.0
+   9          //  说明        ：该文件仅适用于SC95Fxx1x、SC95Fxx2x系列芯片
+  10          //*************************************************************
+  11          
+  12          #include "sc95f_option.h"
+  13          
+  14          /*****************************************************
+  15          *函数名称：void OPTION_WDT_Cmd(FunctionalState NewState)
+  16          *函数功能：WDT功能开关函数
+  17          *入口参数：FunctionalState NewState     功能启动/关闭选择
+  18          *出口参数：void
+  19          *****************************************************/
+  20          void OPTION_WDT_Cmd(FunctionalState NewState)
+  21          {
+  22   1        OPINX = 0XC1;
+  23   1      
+  24   1        if(NewState == DISABLE)
+  25   1        {
+  26   2          OPREG &= 0X7F;
+  27   2        }
+  28   1        else
+  29   1        {
+  30   2          OPREG |= 0X80;
+  31   2        }
+  32   1      }
+  33          
+  34          /*****************************************************
+  35          *函数名称：void OPTION_XTIPLL_Cmd(FunctionalState NewState)
+  36          *函数功能：外部低频晶振使能
+  37          *入口参数：FunctionalState NewState     启动/关闭选择
+  38          *出口参数：void
+  39          *****************************************************/
+  40          void OPTION_XTIPLL_Cmd(FunctionalState NewState)
+  41          {
+  42   1        OPINX = 0XC1;
+  43   1      
+  44   1        if(NewState == DISABLE)
+  45   1        {
+  46   2          OPREG &= 0XBF;
+  47   2        }
+  48   1        else
+  49   1        {
+  50   2          OPREG |= 0X40;
+  51   2        }
+  52   1      }
+  53          
+C51 COMPILER V9.00   SC95F_OPTION                                                          07/01/2021 08:32:27 PAGE 2   
+
+  54          /*****************************************************
+  55          *函数名称：void OPTION_SYSCLK_Init(SYSCLK_PresSel_TypeDef SYSCLK_PresSel)
+  56          *函数功能：系统时钟分频初始化
+  57          *入口参数：SYSCLK_PresSel       选择系统时钟分频
+  58          *出口参数：void
+  59          *****************************************************/
+  60          void OPTION_SYSCLK_Init(SYSCLK_PresSel_TypeDef SYSCLK_PresSel)
+  61          {
+  62   1        OPINX = 0XC1;
+  63   1        OPREG = OPREG & 0XCF | SYSCLK_PresSel;
+  64   1      }
+  65          
+  66          /*****************************************************
+  67          *函数名称：void OPTION_RST_PIN_Cmd(FunctionalState NewState)
+  68          *函数功能：外部复位管脚使能
+  69          *入口参数：FunctionalState NewState     使能/关闭选择
+  70          *出口参数：void
+  71          *****************************************************/
+  72          void OPTION_RST_PIN_Cmd(FunctionalState NewState)
+  73          {
+  74   1        OPINX = 0XC1;
+  75   1      
+  76   1        if(NewState == DISABLE)
+  77   1        {
+  78   2          OPREG |= 0X08;
+  79   2        }
+  80   1        else
+  81   1        {
+  82   2          OPREG &= 0XF7;
+  83   2        }
+  84   1      }
+  85          
+  86          /*****************************************************
+  87          *函数名称：void OPTION_LVR_Init(LVR_Config_TypeDef LVR_Config)
+  88          *函数功能：LVR 电压选择
+  89          *入口参数：LVR_Config    选择LVR电压
+  90          *出口参数：void
+  91          *****************************************************/
+  92          void OPTION_LVR_Init(LVR_Config_TypeDef LVR_Config)
+  93          {
+  94   1        OPINX = 0XC1;
+  95   1        OPREG = OPREG & 0XF8 | LVR_Config;
+  96   1      }
+  97          
+  98          /*****************************************************
+  99          *函数名称：void OPTION_ADC_VrefConfig(ADC_Vref_TypeDef ADC_Vref)
+ 100          *函数功能：ADC 参考电压选择
+ 101          *入口参数：ADC_Vref             选择ADC参考电压
+ 102          *出口参数：void
+ 103          *****************************************************/
+ 104          void OPTION_ADC_VrefConfig(ADC_Vref_TypeDef ADC_Vref)
+ 105          {
+ 106   1        OPINX = 0xC2;
+ 107   1      
+ 108   1        if(ADC_Vref == ADC_VREF_2_048V)
+ 109   1        {
+ 110   2          OPREG &= 0x3f;
+ 111   2          OPREG |= 0x40;              //选择参考内部电压2.048V。
+ 112   2        }
+ 113   1      
+ 114   1        if(ADC_Vref == ADC_VREF_1_024V)
+ 115   1        {
+C51 COMPILER V9.00   SC95F_OPTION                                                          07/01/2021 08:32:27 PAGE 3   
+
+ 116   2          OPREG &= 0x3f;
+ 117   2          OPREG |= 0x80;              //选择参考内部电压1.024V。
+ 118   2        }
+ 119   1      
+ 120   1        if(ADC_Vref == ADC_VREF_VDD)
+ 121   1        {
+ 122   2          OPREG &= 0x3f;              //选择参考电压VDD。
+ 123   2        }
+ 124   1      }
+ 125          
+ 126          /**************************************************
+ 127          *函数名称：void OPTION_IAP_SetOperateRange(IAP_OperateRange_TypeDef IAP_OperateRange)
+ 128          *函数功能：允许IAP操作的范围设置
+ 129          *入口参数：IAP_OperateRange             IAP操作范围
+ 130          *出口参数：void
+ 131          **************************************************/
+ 132          void OPTION_IAP_SetOperateRange(IAP_OperateRange_TypeDef IAP_OperateRange)
+ 133          {
+ 134   1        OPINX = 0xC2;
+ 135   1        OPREG = (OPREG & 0xF3) | IAP_OperateRange;
+ 136   1      }
+ 137          /**************************************************
+ 138          *函数名称：void OPTION_JTG_Cmd(FunctionalState NewState)
+ 139          *函数功能：JTAG/IO口切换控制
+ 140          *入口参数：DISABLE：烧录口作为正常的IO使用
+ 141                             ENABLE：烧录口作为tCK/tDIO使用
+ 142          *出口参数：void
+ 143          **************************************************/
+ 144          void OPTION_JTG_Cmd(FunctionalState NewState)
+ 145          {
+ 146   1        OPINX = 0xC2;
+ 147   1      
+ 148   1        if(NewState == DISABLE)
+ 149   1        {
+ 150   2          OPREG |= 0X10;
+ 151   2        }
+ 152   1        else
+ 153   1        {
+ 154   2          OPREG &= 0XEF;
+ 155   2        }
+ 156   1      }
+ 157          
+ 158          /******************* (C) COPYRIGHT 2020 SinOne Microelectronics *****END OF FILE****/
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    119    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

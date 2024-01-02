@@ -1,0 +1,273 @@
+C51 COMPILER V9.54   SHT30                                                                 04/19/2023 15:54:55 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE SHT30
+OBJECT MODULE PLACED IN ..\Output\SHT30.obj
+COMPILER INVOKED BY: D:\Keil5\C51\BIN\C51.EXE ..\Bank3\SHT30.c LARGE OBJECTADVANCED OPTIMIZE(8,SIZE) BROWSE INCDIR(..\FW
+                    -Lib\SC95F_Lib\inc;..\User;..\Bank1;..\Bank2;..\Bank3) DEFINE(SC95F8x3x) DEBUG PRINT(..\List\SHT30.lst) OBJECT(..\Output\
+                    -SHT30.obj)
+
+line level    source
+
+   1          #include "SHT30.h"
+   2          #include "Delay.h"
+   3          #include "Intrins.h"
+   4          #include "..\Bank1\GUI.h"
+   5          #include "..\Bank1\Lcd_Driver.h"
+   6          #include "stdio.h"
+   7          
+   8          #define I2C_SDA_1()     GPIO_WriteHigh(GPIO2,6)
+   9          #define I2C_SCL_1()             GPIO_WriteHigh(GPIO2,5)
+  10          #define I2C_SDA_0()             GPIO_WriteLow(GPIO2,6)
+  11          #define I2C_SCL_0()             GPIO_WriteLow(GPIO2,5)
+  12          #define I2C_SDA_READ()  GPIO_ReadPin(GPIO2,6)   
+  13          
+  14          #define I2C_WR  0               /* 写控制bit */
+  15          #define I2C_RD  1               /* 读控制bit */
+  16          
+  17          float_data humidity;//存储的湿度数据
+  18          float_data temperature;//存储的温度数据
+  19          u8 status[3];//状态寄存器
+  20          u8 status_crc;//CRC校验计算
+  21          u8 crc_check;//crc结果
+  22          
+  23          u8 hANDt_buff[20]; //将温湿度转存字符数字
+  24          
+  25          void Delay_us(uint8_t uss)
+  26          {
+  27   1              while(uss--)
+  28   1              {
+  29   2                      _nop_();_nop_();_nop_();
+  30   2              }
+  31   1      }
+  32          
+  33          void i2c_Delay()
+  34          {
+  35   1               _nop_();_nop_();_nop_();_nop_();    _nop_();_nop_();_nop_();_nop_();
+  36   1      }
+  37          
+  38          uint8_t i2c_WaitAck(void)
+  39          {
+  40   1              uint8_t try_time = 100;//连接超时次数
+  41   1          I2C_SDA_1();                //CPU释放SDA总线
+  42   1          i2c_Delay();
+  43   1          I2C_SCL_1();                //CPU驱动SCL = 1, 此时器件会返回ACK应答
+  44   1          i2c_Delay(); 
+  45   1      
+  46   1          while(I2C_SDA_READ())//等待SHT30应答
+  47   1          {
+  48   2              try_time--;
+  49   2              i2c_Delay(); 
+  50   2              if(try_time==0)//超时，无响应
+  51   2              {
+  52   3                  I2C_SCL_0();
+  53   3                  i2c_Delay();
+C51 COMPILER V9.54   SHT30                                                                 04/19/2023 15:54:55 PAGE 2   
+
+  54   3                  return 1;
+  55   3              }
+  56   2          }
+  57   1          I2C_SCL_0();
+  58   1          i2c_Delay();    
+  59   1          return 0;
+  60   1      }
+  61          
+  62          
+  63          //CRC校验
+  64          static u8 CRC_Check(u8 *check_data, u8 num, u8 check_crc)
+  65          {
+  66   1          uint8_t bitt;        // bitt mask
+  67   1          uint8_t crc = 0xFF; // calculated checksum
+  68   1          uint8_t byteCtr;    // byte counter
+  69   1          
+  70   1       // calculates 8-Bit checksum with given polynomial x8+x5+x4+1
+  71   1          for(byteCtr = 0; byteCtr < num; byteCtr++)
+  72   1          {
+  73   2              crc ^= (*(check_data+byteCtr));
+  74   2              //crc校验，最高位是1就^0x31
+  75   2              for(bitt = 8; bitt > 0; --bitt)
+  76   2              {
+  77   3                  if(crc & 0x80)
+  78   3                      crc = (crc << 1) ^ 0x31;
+  79   3                  else
+  80   3                      crc = (crc << 1);
+  81   3              }
+  82   2          }
+  83   1          if(crc==check_crc)
+  84   1              return 1;
+  85   1          else 
+  86   1              return 0;
+  87   1      }
+  88          
+  89          //根据所选获取数据的方式初始化
+  90          void SHT30_Init(void)
+  91          {
+  92   1          SHT30_General_RESET();//软复位设备
+  93   1          Delay_ms(10);
+  94   1      }
+  95          
+  96          //复位函数
+  97          void SHT30_General_RESET(void)
+  98          {
+  99   1          USCI3_TWI_Start();
+ 100   1          USCI3_TWI_SendData(0x00);
+ 101   1      //      i2c_WaitAck();
+ 102   1          USCI3_TWI_SendData(0x06);
+ 103   1      //      i2c_WaitAck();
+ 104   1      }
+ 105          
+ 106          //发送两字节指令，stop确定是否发送停止信号
+ 107          void SHT30_SendBytes(u16 cmd,u8 stop)
+ 108          {
+ 109   1          USCI3_TWI_Start();
+ 110   1          USCI3_TWI_SendAddr(SHT30_ADDR,I2C_WR);//写7位I2C设备地址加0作为写取位,1为读取位
+ 111   1      //    i2c_WaitAck();
+ 112   1              USCI3_TWI_SendData(cmd>>8);
+ 113   1      //      i2c_WaitAck();
+ 114   1          USCI3_TWI_SendData(cmd&0xFF);
+ 115   1      //      i2c_WaitAck();
+C51 COMPILER V9.54   SHT30                                                                 04/19/2023 15:54:55 PAGE 3   
+
+ 116   1          if(stop)
+ 117   1              USCI3_TWI_MasterModeStop();
+ 118   1      }
+ 119          
+ 120          //加速响应指令
+ 121          void SHT30_ART(void)
+ 122          {
+ 123   1          SHT30_SendBytes(0x2B32,0);
+ 124   1      }
+ 125          
+ 126          //配置周期读取重复性和采样速率
+ 127          void SHT30_Periodic_SetRepeat(void)
+ 128          {
+ 129   1          SHT30_SendBytes(0x2737,0);//高重复度，mps为10
+ 130   1      }
+ 131          
+ 132          //配置周期读取总配置
+ 133          void SHT30_Periodic_Config(void)
+ 134          {
+ 135   1          //配置
+ 136   1          SHT30_Periodic_SetRepeat();
+ 137   1          SHT30_ART();
+ 138   1      }
+ 139          
+ 140          //单次读取数据
+ 141          void SHT30_Single_Shot(u8 *buffer)
+ 142          {
+ 143   1          u8 try_time=100;
+ 144   1          
+ 145   1          SHT30_SendBytes(0x2C06,1);
+ 146   1          
+ 147   1          Delay_ms(20);//很重要！不然读不出数据
+ 148   1          USCI3_TWI_Start();
+ 149   1              USCI3_TWI_SendAddr(SHT30_ADDR,I2C_RD);//写7位I2C设备地址加0作为写取位,1为读取位
+ 150   1              
+ 151   1              while(i2c_WaitAck())
+ 152   1              {
+ 153   2                      try_time--;
+ 154   2                      Delay_us(50);
+ 155   2                      if(try_time==0)
+ 156   2                              return;
+ 157   2              }
+ 158   1              
+ 159   1          buffer[0]=USCI3_TWI_ReceiveData();
+ 160   1          buffer[1]=USCI3_TWI_ReceiveData();
+ 161   1          buffer[2]=USCI3_TWI_ReceiveData();
+ 162   1          buffer[3]=USCI3_TWI_ReceiveData();
+ 163   1          buffer[4]=USCI3_TWI_ReceiveData();
+ 164   1          buffer[5]=USCI3_TWI_ReceiveData();
+ 165   1          USCI3_TWI_MasterModeStop();
+ 166   1      }
+ 167          
+ 168          //周期读取数据 如果使用就要在初始化时加上SHT30_Periodic_Config()函数
+ 169          void SHT30_Periodic(u8 *buffer)
+ 170          {
+ 171   1          u8 try_time=100;
+ 172   1          
+ 173   1          //获取数据
+ 174   1          SHT30_SendBytes(0xE000,0);
+ 175   1          Delay_ms(20);//很重要！不然读不出数据
+ 176   1      
+ 177   1          USCI3_TWI_Start();
+C51 COMPILER V9.54   SHT30                                                                 04/19/2023 15:54:55 PAGE 4   
+
+ 178   1      
+ 179   1          USCI3_TWI_SendAddr(SHT30_ADDR,I2C_RD);//写7位I2C设备地址加0作为写取位,1为读取位
+ 180   1          
+ 181   1              while(i2c_WaitAck())
+ 182   1          {
+ 183   2              try_time--;
+ 184   2              Delay_us(50);
+ 185   2              if(try_time==0)
+ 186   2                  return;
+ 187   2          }
+ 188   1              
+ 189   1          buffer[0]=USCI3_TWI_ReceiveData();
+ 190   1          buffer[1]=USCI3_TWI_ReceiveData();
+ 191   1          buffer[2]=USCI3_TWI_ReceiveData();
+ 192   1          buffer[3]=USCI3_TWI_ReceiveData();
+ 193   1          buffer[4]=USCI3_TWI_ReceiveData();
+ 194   1          buffer[5]=USCI3_TWI_ReceiveData();
+ 195   1          USCI3_TWI_MasterModeStop();
+ 196   1      }
+ 197          
+ 198          void SHT30_Read(void)
+ 199          {    
+ 200   1          u8 buff[6];//获取raw数据
+ 201   1          u16 tem,hum;//拼接温湿度数据
+ 202   1          u8 crcT,crcH;//温度和湿度的CRC校验
+ 203   1      
+ 204   1          float Temperature=0;//转换后的温湿度
+ 205   1          float Humidity=0;
+ 206   1      
+ 207   1              SHT30_Single_Shot(buff);
+ 208   1      //    SHT30_Periodic(buff);
+ 209   1          
+ 210   1          tem = ((buff[0]<<8) | buff[1]);//温度拼接
+ 211   1          hum = ((buff[3]<<8) | buff[4]);//湿度拼接
+ 212   1      
+ 213   1          //计算温度和湿度CRC校验码
+ 214   1          crcT = CRC_Check(buff,2,buff[2]);   //温度
+ 215   1          crcH = CRC_Check(buff+3,2,buff[5]); //湿度
+ 216   1          
+ 217   1      //    if(crcT&&crcH)//判断CRC校验是否对
+ 218   1      //    {
+ 219   1              //根据手册计算公式计算
+ 220   1              Temperature= (175.0*(float)tem/65535.0-45.0) ;  // T = -45 + 175 * tem / (2^16-1)
+ 221   1              Humidity= (100.0*(float)hum/65535.0);           // RH = hum*100 / (2^16-1)
+ 222   1      //        if((Temperature>=-20)&&(Temperature<=125)&&(Humidity>=0)&&(Humidity<=100))//过滤超出测量范围的错
+             -误数据
+ 223   1              {
+ 224   2                  temperature.fdata=Temperature;
+ 225   2                  humidity.fdata=Humidity;
+ 226   2              }
+ 227   1      //    }
+ 228   1      }
+ 229          
+ 230          void SHT30_Show(void)
+ 231          {
+ 232   1              sprintf(hANDt_buff,"%6.2f*C %6.2f",temperature.fdata,humidity.fdata); //111.01*C 100.01%（保留2位小数）
+ 233   1              Gui_DrawFont_GBK24(-1,50,RED,BACK_COLOR,hANDt_buff);
+ 234   1      }
+ 235          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+C51 COMPILER V9.54   SHT30                                                                 04/19/2023 15:54:55 PAGE 5   
+
+   CODE SIZE        =    924    ----
+   CONSTANT SIZE    =     14    ----
+   XDATA SIZE       =     33      37
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

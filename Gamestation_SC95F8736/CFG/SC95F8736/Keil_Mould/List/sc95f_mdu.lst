@@ -1,0 +1,157 @@
+C51 COMPILER V9.01   SC95F_MDU                                                             09/07/2020 16:59:33 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE SC95F_MDU
+OBJECT MODULE PLACED IN ..\Output\sc95f_mdu.obj
+COMPILER INVOKED BY: E:\Keil\C51\BIN\C51.EXE ..\FWLib\SC95F_Lib\src\sc95f_mdu.c OMF2 BROWSE INCDIR(..\FWLib\SC95F_Lib\in
+                    -c;..\User) DEFINE(SC95F8x2x) DEBUG PRINT(..\List\sc95f_mdu.lst) OBJECT(..\Output\sc95f_mdu.obj)
+
+line level    source
+
+   1          //************************************************************
+   2          //  Copyright (c) 深圳市赛元微电子有限公司
+   3          //      文件名称        : sc95f_mdu.c
+   4          //      作者            : 
+   5          //      模块功能        : MDU固件库函数C文件
+   6          //      局部函数列表:
+   7          //  最后更正日期: 2020/8/13
+   8          //      版本            : V1.0 
+   9          //  说明        ： 该文件仅适用于SC95Fxx1x、SC95Fxx2x系列芯片 
+  10          //*************************************************************
+  11          
+  12          #include "sc95f_mdu.h"
+  13          
+  14          /**************************************************
+  15          *函数名称：void MDU_DeInit(void)
+  16          *函数功能：MDU相关寄存器复位至缺省值
+  17          *入口参数：void
+  18          *出口参数：void
+  19          **************************************************/
+  20          void MDU_DeInit(void)
+  21          {
+  22   1              OPERCON &= 0X3F;
+  23   1              EXA0 = 0X00;
+  24   1              EXA1 = 0X00;
+  25   1              EXA2 = 0X00;
+  26   1              EXA3 = 0X00;
+  27   1              EXBL = 0X00;
+  28   1              EXBH = 0X00;
+  29   1      }
+  30          
+  31          /**************************************************
+  32          *函数名称：void MDU_MultiplicationConfig(uint16_t Multiplicand, uint16_t Multiplier)
+  33          *函数功能：MDU乘法运算配置函数
+  34          *入口参数：Multiplicand         被乘数
+  35                             Multiplier           乘数
+  36          *出口参数：void
+  37          **************************************************/
+  38          void MDU_MultiplicationConfig(uint16_t Multiplicand,uint16_t Multiplier)
+  39          {
+  40   1              OPERCON &= 0XBF;        
+  41   1              EXBL = Multiplier ;
+  42   1              EXBH = Multiplier >> 8;
+  43   1              EXA0 = Multiplicand ;
+  44   1              EXA1 = Multiplicand >> 8;
+  45   1      }
+  46          
+  47          /**************************************************
+  48          *函数名称：void MDU_DivisionConfig(uint32_t Dividend, uint16_t Divisor)
+  49          *函数功能：MDU除法运算配置函数
+  50          *入口参数：Dividend             被除数
+  51                             Divisor              除数
+  52          *出口参数：void
+  53          **************************************************/
+  54          void MDU_DivisionConfig(uint32_t Dividend,uint16_t Divisor)
+C51 COMPILER V9.01   SC95F_MDU                                                             09/07/2020 16:59:33 PAGE 2   
+
+  55          {
+  56   1              MDU_Temp_Union MDU_DivisionTemp;
+  57   1              MDU_DivisionTemp.MDU_Temp = Dividend;
+  58   1      
+  59   1              OPERCON |= 0X40;
+  60   1              EXA0 = MDU_DivisionTemp.MDU_EXAxReg.MDU_EXA0Reg;
+  61   1              EXA1 = MDU_DivisionTemp.MDU_EXAxReg.MDU_EXA1Reg;
+  62   1              EXA2 = MDU_DivisionTemp.MDU_EXAxReg.MDU_EXA2Reg;
+  63   1              EXA3 = MDU_DivisionTemp.MDU_EXAxReg.MDU_EXA3Reg;
+  64   1              EXBL = Divisor;
+  65   1              EXBH = Divisor >> 8;
+  66   1      }
+  67          
+  68          /**************************************************
+  69          *函数名称：void MDU_StartOperation(void)
+  70          *函数功能：MDU启动一次运算
+  71          *入口参数：void 
+  72          *出口参数：void
+  73          **************************************************/
+  74          void MDU_StartOperation(void)
+  75          {
+  76   1              OPERCON |= 0x80;
+  77   1              while(OPERCON & 0x80);
+  78   1      }
+  79          
+  80          /**************************************************
+  81          *函数名称：uint32_t MDU_GetProduct(void)
+  82          *函数功能：获取乘积
+  83          *入口参数：void 
+  84          *出口参数：uint32_t             乘积
+  85          **************************************************/
+  86          uint32_t MDU_GetProduct(void)
+  87          {
+  88   1              MDU_Temp_Union MDU_ProductTemp;
+  89   1              MDU_ProductTemp.MDU_EXAxReg.MDU_EXA0Reg = EXA0;
+  90   1              MDU_ProductTemp.MDU_EXAxReg.MDU_EXA1Reg = EXA1;
+  91   1              MDU_ProductTemp.MDU_EXAxReg.MDU_EXA2Reg = EXA2;
+  92   1              MDU_ProductTemp.MDU_EXAxReg.MDU_EXA3Reg = EXA3;
+  93   1              return MDU_ProductTemp.MDU_Temp;
+  94   1      }
+  95          
+  96          /**************************************************
+  97          *函数名称：uint32_t MDU_GetQuotient(void)
+  98          *函数功能：获取商
+  99          *入口参数：void 
+ 100          *出口参数：uint32_t             商
+ 101          **************************************************/
+ 102          uint32_t MDU_GetQuotient(void)
+ 103          {
+ 104   1              MDU_Temp_Union MDU_QuotientTemp;
+ 105   1              MDU_QuotientTemp.MDU_EXAxReg.MDU_EXA0Reg = EXA0;
+ 106   1              MDU_QuotientTemp.MDU_EXAxReg.MDU_EXA1Reg = EXA1;
+ 107   1              MDU_QuotientTemp.MDU_EXAxReg.MDU_EXA2Reg = EXA2;
+ 108   1              MDU_QuotientTemp.MDU_EXAxReg.MDU_EXA3Reg = EXA3;
+ 109   1              return MDU_QuotientTemp.MDU_Temp;
+ 110   1      }
+ 111          
+ 112          /**************************************************
+ 113          *函数名称：uint16_t MDU_GetRemainder(void)
+ 114          *函数功能：获取余数
+ 115          *入口参数：void 
+ 116          *出口参数：uint16_t             余数
+C51 COMPILER V9.01   SC95F_MDU                                                             09/07/2020 16:59:33 PAGE 3   
+
+ 117          **************************************************/
+ 118          uint16_t MDU_GetRemainder(void)
+ 119          {
+ 120   1              uint16_t MDU_RemainderTemp;
+ 121   1              MDU_RemainderTemp = EXBH*256+ EXBL;
+ 122   1              return MDU_RemainderTemp;
+ 123   1      }
+ 124          
+ 125          /******************* (C) COPYRIGHT 2020 SinOne Microelectronics *****END OF FILE****/
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    130    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      18
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

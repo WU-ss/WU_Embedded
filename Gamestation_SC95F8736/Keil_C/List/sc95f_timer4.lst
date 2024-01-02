@@ -1,0 +1,319 @@
+C51 COMPILER V9.54   SC95F_TIMER4                                                          04/19/2023 15:54:51 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE SC95F_TIMER4
+OBJECT MODULE PLACED IN ..\Output\sc95f_timer4.obj
+COMPILER INVOKED BY: D:\Keil5\C51\BIN\C51.EXE ..\FWLib\SC95F_Lib\src\sc95f_timer4.c LARGE OBJECTADVANCED OPTIMIZE(8,SIZE
+                    -) BROWSE INCDIR(..\FWLib\SC95F_Lib\inc;..\User;..\Bank1;..\Bank2;..\Bank3) DEFINE(SC95F8x3x) DEBUG PRINT(..\List\sc95f_t
+                    -imer4.lst) OBJECT(..\Output\sc95f_timer4.obj)
+
+line level    source
+
+   1          //************************************************************
+   2          //  Copyright (c) 
+   3          //      文件名称        : sc95f_timer4.c
+   4          //      作者            :
+   5          //      模块功能        : TIMER4固件库函数C文件
+   6          //  最后更正日期:       2022年7月22日
+   7          //      版本:                                   V1.10004
+   8          //  说明        :该文件仅适用于SC95F系列芯片
+   9          //*************************************************************
+  10          
+  11          #include "sc95f_timer4.h"
+  12          
+  13          /**************************************************
+  14          *函数名称:void TIM4_DeInit(void)
+  15          *函数功能:TIMER4相关寄存器复位至缺省值
+  16          *入口参数:void
+  17          *出口参数:void
+  18          **************************************************/
+  19          void TIM4_DeInit()
+  20          {
+  21   1        TXINX = 0x04; //TIMER4 选择
+  22   1        TXCON = 0X00;
+  23   1        TXMOD = 0X00;
+  24   1        RCAPXH = 0X00;
+  25   1        RCAPXL = 0X00;
+  26   1        THX = 0X00;
+  27   1        TLX = 0X00;
+  28   1        IE1 &= 0X3F;
+  29   1        IP1 &= 0X3F;
+  30   1        ET2 = 0;
+  31   1        IPT2 = 0;
+  32   1      }
+  33          
+  34          /**************************************************
+  35          *函数名称:void TIM4_PrescalerSelection(TIM4_PresSel_TypeDef TIM4_PrescalerSelection)
+  36          *函数功能:TIMER4 预分频选择
+  37          *入口参数:
+  38          TIM4_PresSel_TypeDef:TIM4_PrescalerSelection:预分频选择
+  39          *出口参数:void
+  40          **************************************************/
+  41          void TIM4_PrescalerSelection(TIM4_PresSel_TypeDef TIM4_PrescalerSelection)
+  42          {
+  43   1        TXINX = 0x04;
+  44   1      
+  45   1        if (TIM4_PrescalerSelection == TIM4_PRESSEL_FSYS_D12)
+  46   1        {
+  47   2          TXMOD &= 0X7F;
+  48   2        }
+  49   1        else if (TIM4_PrescalerSelection == TIM4_PRESSEL_FSYS_D1)
+  50   1        {
+  51   2          TXMOD |= 0X80;
+  52   2        }
+  53   1      }
+C51 COMPILER V9.54   SC95F_TIMER4                                                          04/19/2023 15:54:51 PAGE 2   
+
+  54          
+  55          /**************************************************
+  56          *函数名称:void TIM4_WorkMode1Config(uint16_t TIM4_SetCounter)
+  57          *函数功能:TIMER4工作模式1配置函数
+  58          *入口参数:
+  59          uint16_t:TIM4_SetCounter:配置计数初值
+  60          *出口参数:void
+  61          **************************************************/
+  62          void TIM4_WorkMode1Config(uint16_t TIM4_SetCounter)
+  63          {
+  64   1        TXINX = 0x04;
+  65   1        RCAPXL = TIM4_SetCounter % 256;
+  66   1        RCAPXH = TIM4_SetCounter / 256;
+  67   1      
+  68   1        TLX = RCAPXL;
+  69   1        THX = RCAPXH;
+  70   1      }
+  71          
+  72          /*****************************************************
+  73          *函数名称:void TIM4_Cmd(FunctionalState NewState)
+  74          *函数功能:TIMER4功能开关函数
+  75          *入口参数:
+  76          FunctionalState:NewState:功能启动/关闭选择
+  77          *出口参数:void
+  78          *****************************************************/
+  79          void TIM4_Cmd(FunctionalState NewState)
+  80          {
+  81   1        TXINX = 0x04;
+  82   1      
+  83   1        if (NewState == DISABLE)
+  84   1        {
+  85   2          TRX = 0;
+  86   2        }
+  87   1        else
+  88   1        {
+  89   2          TRX = 1;
+  90   2        }
+  91   1      }
+  92          
+  93          /*****************************************************
+  94          *函数名称:void TIMX_ITConfig(FunctionalState NewState, PriorityStatus Priority)
+  95          *函数功能:TIMER4中断初始化
+  96          *入口参数:
+  97          FunctionalState:NewState:中断使能/关闭选择
+  98          PriorityStatus:Priority:中断优先级选择
+  99          *出口参数:void
+ 100          *****************************************************/
+ 101          void TIM4_ITConfig(FunctionalState NewState, PriorityStatus Priority)
+ 102          {
+ 103   1        TXINX = 0x04;
+ 104   1      
+ 105   1        if (NewState == DISABLE)
+ 106   1        {
+ 107   2          IE1 &= 0X7F;
+ 108   2        }
+ 109   1        else
+ 110   1        {
+ 111   2          IE1 |= 0X80;
+ 112   2        }
+ 113   1      
+ 114   1        if (Priority == LOW)
+ 115   1        {
+C51 COMPILER V9.54   SC95F_TIMER4                                                          04/19/2023 15:54:51 PAGE 3   
+
+ 116   2          IP1 &= 0X7F;
+ 117   2        }
+ 118   1        else
+ 119   1        {
+ 120   2          IP1 |= 0X80;
+ 121   2        }
+ 122   1      }
+ 123          
+ 124          /*****************************************************
+ 125          *函数名称:FlagStatus TIM4_GetFlagStatus(TIM4_Flag_TypeDef TIM4_Flag)
+ 126          *函数功能:获得TIMER4中断标志状态
+ 127          *入口参数:
+ 128          TIM4_Flag_TypeDef:TIM4_Flag:TIMER4标志选择
+ 129          *出口参数:
+ 130          FlagStatus:TIMER4中断标志状态
+ 131          *****************************************************/
+ 132          FlagStatus TIM4_GetFlagStatus(TIM4_Flag_TypeDef TIM4_Flag)
+ 133          {
+ 134   1        FlagStatus status = RESET;
+ 135   1        TXINX = 0x04;
+ 136   1      
+ 137   1        if ((TIM4_Flag & TXCON) != (uint8_t)RESET)
+ 138   1        {
+ 139   2          status = SET;
+ 140   2        }
+ 141   1        else
+ 142   1        {
+ 143   2          status = RESET;
+ 144   2        }
+ 145   1      
+ 146   1        return status;
+ 147   1      }
+ 148          
+ 149          /*****************************************************
+ 150          *函数名称:void TIM4_ClearFlag(TIM4_Flag_TypeDef TIM4_Flag)
+ 151          *函数功能:清除TIMER4中断标志状态
+ 152          *入口参数:
+ 153          TIM4_Flag_TypeDef:TIM4_Flag:TIMER4标志选择
+ 154          *出口参数:void
+ 155          *****************************************************/
+ 156          void TIM4_ClearFlag(TIM4_Flag_TypeDef TIM4_Flag)
+ 157          {
+ 158   1        TXINX = 0x04;
+ 159   1        TXCON &= (~TIM4_Flag);
+ 160   1      }
+ 161          
+ 162          #if defined(SC95F8x2x) || defined(SC95F7x2x) || defined(SC95F8x3x) || defined(SC95F7x3x) || defined (SC95F
+             -8x6x) || defined (SC95F7x6x)\
+ 163                          || defined (SC95F8x1xB) || defined (SC95F7x1xB) || defined (SC95R751) || defined (SC95F7610B) || defined
+             - (SC95F7619B)
+ 164          /**************************************************
+ 165          *函数名称:void TIM4_TimeBaseInit(TIM4_CountMode_TypeDef TIM4_CountMode, TIM4_CountDirection_TypeDef TIM4_C
+             -ountDirection)
+ 166          *函数功能:TIM4基本设置配置函数
+ 167          *入口参数:
+ 168          TIM4_CountMode_TypeDef:TIM4_CountMode:计数/定时模式选择
+ 169          TIM4_CountDirection_TypeDef:TIM4_CountDirection:计数方向选择
+ 170          *出口参数:void
+ 171          **************************************************/
+ 172          void TIM4_TimeBaseInit(TIM4_CountMode_TypeDef TIM4_CountMode,
+ 173                                 TIM4_CountDirection_TypeDef TIM4_CountDirection)
+ 174          {
+C51 COMPILER V9.54   SC95F_TIMER4                                                          04/19/2023 15:54:51 PAGE 4   
+
+ 175   1        TXINX = 0x04;
+ 176   1      
+ 177   1        if (TIM4_CountMode == TIM4_MODE_TIMER)
+ 178   1        {
+ 179   2          TXCON &= 0XFD;
+ 180   2        }
+ 181   1        else if (TIM4_CountMode == TIM4_MODE_COUNTER)
+ 182   1        {
+ 183   2          TXCON |= 0X02;
+ 184   2        }
+ 185   1      
+ 186   1        /************************************************************/
+ 187   1        if (TIM4_CountDirection == TIM4_COUNTDIRECTION_UP)
+ 188   1        {
+ 189   2          TXMOD &= 0XFE;
+ 190   2        }
+ 191   1        else if (TIM4_CountDirection == TIM4_COUNTDIRECTION_DOWN_UP)
+ 192   1        {
+ 193   2          TXMOD |= 0X01;
+ 194   2        }
+ 195   1      }
+ 196          
+ 197          /**************************************************
+ 198          *函数名称:void TIM4_WorkMode0Config(uint16_t TIM4_SetCounter)
+ 199          *函数功能:TIMER4工作模式0配置函数
+ 200          *入口参数:
+ 201          uint16_t:TIM4_SetCounter:配置计数初值
+ 202          *出口参数:void
+ 203          **************************************************/
+ 204          void TIM4_WorkMode0Config(uint16_t TIM4_SetCounter)
+ 205          {
+ 206   1        TXINX = 0x04;
+ 207   1        CP = 1;
+ 208   1        TLX = TIM4_SetCounter % 256;
+ 209   1        THX = TIM4_SetCounter / 256;
+ 210   1      }
+ 211          
+ 212          /**************************************************
+ 213          *函数名称:void TIM4_WorkMode3Config(uint16_t TIM4_SetCounter)
+ 214          *函数功能:TIMER2工作模式3配置函数
+ 215          *入口参数:
+ 216          uint16_t:TIM2_SetCounter:配置计数初值
+ 217          *出口参数:void
+ 218          **************************************************/
+ 219          void TIM4_WorkMode3Config(uint16_t TIM4_SetCounter)
+ 220          {
+ 221   1        TXINX = 0x04;
+ 222   1        RCAPXL = TIM4_SetCounter % 256;
+ 223   1        RCAPXH = TIM4_SetCounter / 256;
+ 224   1        TXMOD |= 0X02;
+ 225   1      }
+ 226          
+ 227          /**************************************************
+ 228          *函数名称:void TIM4_WorkModeConfig(TIM4_WorkMode_TypeDef TIM4_WorkMode, uint16_t TIM4_SetCounter)
+ 229          *函数功能:TIMER4工作模式配置函数
+ 230          *入口参数:
+ 231          TIM4_WorkMode_TypeDef:TIM4_WorkMode:TIMER2工作模式选择
+ 232          uint16_t:TIM4_SetCounter:TIMER2计数初值配置
+ 233          *出口参数:void
+ 234          **************************************************/
+ 235          void TIM4_WorkModeConfig(TIM4_WorkMode_TypeDef TIM4_WorkMode, uint16_t TIM4_SetCounter)
+ 236          {
+C51 COMPILER V9.54   SC95F_TIMER4                                                          04/19/2023 15:54:51 PAGE 5   
+
+ 237   1        switch (TIM4_WorkMode)
+ 238   1        {
+ 239   2        case TIM4_WORK_MODE0:
+ 240   2          TIM4_WorkMode0Config(TIM4_SetCounter);
+ 241   2          break;
+ 242   2      
+ 243   2        case TIM4_WORK_MODE1:
+ 244   2          TIM4_WorkMode1Config(TIM4_SetCounter);
+ 245   2          break;
+ 246   2      
+ 247   2        case TIM4_WORK_MODE3:
+ 248   2          TIM4_WorkMode3Config(TIM4_SetCounter);
+ 249   2          break;
+ 250   2      
+ 251   2        default:
+ 252   2          break;
+ 253   2        }
+ 254   1      }
+ 255          
+ 256          /*****************************************************
+ 257          *函数名称:void TIM4_SetEXEN4(FunctionalState NewState)
+ 258          *函数功能:TIMER4_EXEN4配置函数
+ 259          *入口参数:
+ 260          FunctionalState:NewState:EXEN4使能选择
+ 261          *出口参数:void
+ 262          *****************************************************/
+ 263          void TIM4_SetEXEN4(FunctionalState NewState)
+ 264          {
+ 265   1        TXINX = 0x04;
+ 266   1      
+ 267   1        if (NewState == DISABLE)
+ 268   1        {
+ 269   2          EXENX = 0;
+ 270   2        }
+ 271   1        else
+ 272   1        {
+ 273   2          EXENX = 1;
+ 274   2        }
+ 275   1      }
+ 276          
+ 277          #endif
+ 278          
+ 279          /******************* (C) COPYRIGHT 2020 SinOne Microelectronics *****END OF FILE****/
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    285    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

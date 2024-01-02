@@ -1,0 +1,1193 @@
+C51 COMPILER V9.54   SC95F_USCI2                                                           04/19/2023 15:54:52 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE SC95F_USCI2
+OBJECT MODULE PLACED IN ..\Output\sc95f_usci2.obj
+COMPILER INVOKED BY: D:\Keil5\C51\BIN\C51.EXE ..\FWLib\SC95F_Lib\src\sc95f_usci2.c LARGE OBJECTADVANCED OPTIMIZE(8,SIZE)
+                    - BROWSE INCDIR(..\FWLib\SC95F_Lib\inc;..\User;..\Bank1;..\Bank2;..\Bank3) DEFINE(SC95F8x3x) DEBUG PRINT(..\List\sc95f_us
+                    -ci2.lst) OBJECT(..\Output\sc95f_usci2.obj)
+
+line level    source
+
+   1          //************************************************************
+   2          //  Copyright (c) 
+   3          //      文件名称:                       sc95f_usci2.c
+   4          //      作者:
+   5          //      模块功能:                       USCI2固件库函数C文件
+   6          //  最后更正日期:       2022年7月22日
+   7          //      版本:                                   V1.10006
+   8          //  说明:                                       该文件仅适用于SC95Fxx1x、SC95Fxx2x系列芯片
+   9          //*************************************************************
+  10          
+  11          #include "sc95f_usci2.h"
+  12          
+  13          #if defined(SC95F8x3x) || defined(SC95F7x3x) || defined (SC95F8x6x) || defined (SC95F7x6x)  || defined (SC
+             -95F8x1xB) || defined (SC95F7x1xB)\
+  14           || defined (SC95R751) || defined (SC95F7610B) || defined (SC95F7619B)
+  15          void USCI2_DeInit(void)
+  16          {
+  17   1        USXINX &= 0xF8;
+  18   1        USXINX |= 0X02;
+  19   1        TMCON &= 0X3F;
+  20   1        USXCON0 = 0X00;
+  21   1        USXCON1 = 0X00;
+  22   1        USXCON2 = 0X00;
+  23   1        USXCON3 = 0X00;
+  24   1        IE2 &= (~0X02);
+  25   1        IP2 &= (~0X02);
+  26   1      }
+  27          
+  28          /**************************************************
+  29          *函数名称:void USCI2_SPI_Init(USCI2_SPI_FirstBit_TypeDef FirstBit, USCI2_SPI_BaudRatePrescaler_TypeDef Bau
+             -dRatePrescaler,USCI2_SPI_Mode_TypeDef Mode,
+  30                                                                   USCI2_SPI_ClockPolarity_TypeDef ClockPolarity, USCI2_SPI_ClockPhase_TypeDef ClockPhase,USCI2_SPI_T
+             -XE_INT_TypeDef SPI_TXE_INT,USCI2_TransmissionMode_TypeDef TransmissionMode)
+  31          *函数功能:SPI初始化配置函数
+  32          *入口参数:
+  33          USCI2_SPI_FirstBit_TypeDef:FirstBit:优先传送位选择（MSB/LSB）
+  34          USCI2_SPI_BaudRatePrescaler_TypeDef:BaudRatePrescaler:SPI时钟频率选择
+  35          USCI2_SPI_Mode_TypeDef:Mode:SPI工作模式选择
+  36          USCI2_SPI_ClockPolarity_TypeDef:ClockPolarity:SPI时钟极性选择
+  37          USCI2_SPI_ClockPhase_TypeDef:ClockPhase:SPI时钟相位选择
+  38          USCI2_SPI_TXE_INT_TypeDef:SPI_TXE_INT:发送缓存器中断允许选择,该功能在SC95FXX1X芯片上无效
+  39          USCI2_TransmissionMode_TypeDef:TransmissionMode:SPI传输模式选择 8/16位
+  40          *出口参数:void
+  41          **************************************************/
+  42          void USCI2_SPI_Init(USCI2_SPI_FirstBit_TypeDef FirstBit,
+  43                              USCI2_SPI_BaudRatePrescaler_TypeDef BaudRatePrescaler, USCI2_SPI_Mode_TypeDef Mode,
+  44                              USCI2_SPI_ClockPolarity_TypeDef ClockPolarity, USCI2_SPI_ClockPhase_TypeDef ClockPhase
+             -,
+  45                              USCI2_SPI_TXE_INT_TypeDef SPI_TXE_INT, USCI2_TransmissionMode_TypeDef TransmissionMode
+             -)
+  46          {
+  47   1        USXINX &= 0xF8;
+  48   1        USXINX |= 0X02;
+C51 COMPILER V9.54   SC95F_USCI2                                                           04/19/2023 15:54:52 PAGE 2   
+
+  49   1        TMCON = (TMCON & 0X3F) | 0X40;
+  50   1        USXCON1 = USXCON1 & (~0X05) | FirstBit | SPI_TXE_INT | TransmissionMode;
+  51   1      
+  52   1        USXCON0 = USXCON0 & 0X80 | BaudRatePrescaler | Mode | ClockPolarity | ClockPhase;
+  53   1      }
+  54          
+  55          /**************************************************
+  56          *函数名称:void USCI2_TransmissionMode(USCI2_TransmissionMode_TypeDef TransmissionMode)
+  57          *函数功能:SPI 传输模式配置函数
+  58          *入口参数:
+  59          USCI2_TransmissionMode_TypeDef:TransmissionMode:SPI传输模式选择 8/16e位
+  60          *出口参数:void
+  61          **************************************************/
+  62          void USCI2_TransmissionMode(USCI2_TransmissionMode_TypeDef TransmissionMode)
+  63          {
+  64   1        USXINX &= 0xF8;
+  65   1        USXINX |= 0X02;
+  66   1        TMCON = (TMCON & 0X3F) | 0X40;
+  67   1        if (TransmissionMode == USCI2_SPI_DATA8)
+  68   1        {
+  69   2          USXCON1 &= 0xFD;
+  70   2        }
+  71   1        else
+  72   1        {
+  73   2          USXCON1 |= 0x02;
+  74   2        }
+  75   1      }
+  76          
+  77          /*****************************************************
+  78          *函数名称:void USCI2_SPI_Cmd(FunctionalState NewState)
+  79          *函数功能:SPI功能开关函数
+  80          *入口参数:
+  81          FunctionalState:NewState:功能启动/关闭选择
+  82          *出口参数:void
+  83          *****************************************************/
+  84          void USCI2_SPI_Cmd(FunctionalState NewState)
+  85          {
+  86   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI2
+  87   1        USXINX |= 0X02;
+  88   1        TMCON = (TMCON & 0X3F) | 0X40;
+  89   1      
+  90   1        if (NewState != DISABLE)
+  91   1        {
+  92   2          USXCON0 |= 0X80;
+  93   2        }
+  94   1        else
+  95   1        {
+  96   2          USXCON0 &= (~0X80);
+  97   2        }
+  98   1      }
+  99          
+ 100          /*****************************************************
+ 101          *函数名称:void USCI2_SPI_SendData_8(uint8_t Data)
+ 102          *函数功能:USCI2 SPI发送数据
+ 103          *入口参数:
+ 104          uint8_t:Data:发送的数据
+ 105          *出口参数:void
+ 106          *****************************************************/
+ 107          void USCI2_SPI_SendData_8(uint8_t Data)
+ 108          {
+ 109   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI2
+ 110   1        USXINX |= 0X02;
+C51 COMPILER V9.54   SC95F_USCI2                                                           04/19/2023 15:54:52 PAGE 3   
+
+ 111   1        USXCON2 = Data;
+ 112   1      }
+ 113          
+ 114          /*****************************************************
+ 115          *函数名称:uint8_t USCI2_SPI_ReceiveData_8(void)
+ 116          *函数功能:获得USXCON2中的值
+ 117          *入口参数:void
+ 118          *出口参数:
+ 119          uint8_t:接收的数据
+ 120          *****************************************************/
+ 121          uint8_t USCI2_SPI_ReceiveData_8(void)
+ 122          {
+ 123   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI2
+ 124   1        USXINX |= 0X02;
+ 125   1        return USXCON2;
+ 126   1      }
+ 127          
+ 128          /*****************************************************
+ 129          *函数名称:void USCI2_SPI_SendData_16(uint16_t Data)
+ 130          *函数功能:USXCON2 SPI发送数据
+ 131          *入口参数:
+ 132          uint16_t:Data:发送的数据
+ 133          *出口参数:void
+ 134          *****************************************************/
+ 135          void USCI2_SPI_SendData_16(uint16_t Data)
+ 136          {
+ 137   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI2
+ 138   1        USXINX |= 0X02;
+ 139   1        USXCON3 = (uint8_t)(Data >> 8);
+ 140   1        USXCON2 = (uint8_t)Data;
+ 141   1      }
+ 142          
+ 143          /*****************************************************
+ 144          *函数名称:uint16_t USCI2_SPI_ReceiveData_16(void)
+ 145          *函数功能:获得USXCON2中的值
+ 146          *入口参数:void
+ 147          *出口参数:
+ 148          uint16_t:接收的数据
+ 149          *****************************************************/
+ 150          uint16_t USCI2_SPI_ReceiveData_16(void)
+ 151          {
+ 152   1        uint16_t SPI_data;
+ 153   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI2
+ 154   1        USXINX |= 0X02;
+ 155   1        SPI_data = (uint16_t)((USXCON3 << 8) | USXCON2);
+ 156   1        return SPI_data;
+ 157   1      }
+ 158          
+ 159          /**************************************************
+ 160          *函数名称:void USCI2_TWI_Slave_Init(uint8_t TWI_Address)
+ 161          *函数功能:USCI2 TWI 从机初始化配置函数
+ 162          *入口参数:
+ 163          uint8_t:TWI_Address:TWI作为从机时的7位从机地址
+ 164          *出口参数:void
+ 165          **************************************************/
+ 166          void USCI2_TWI_Slave_Init(uint8_t TWI_Address)
+ 167          {
+ 168   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI2
+ 169   1        USXINX |= 0X02;
+ 170   1        TMCON = TMCON & 0X3F | 0X80;
+ 171   1        USXCON2 = TWI_Address << 1;
+ 172   1      }
+C51 COMPILER V9.54   SC95F_USCI2                                                           04/19/2023 15:54:52 PAGE 4   
+
+ 173          
+ 174          /**************************************************
+ 175          *函数名称:void USCI2_TWI_MasterCommunicationRate(USCI2_TWI_MasterCommunicationRate_TypeDef TWI_MasterCommu
+             -nicationRate)
+ 176          *函数功能:USCI2 TWI主机模式下通讯速率设定
+ 177          *入口参数:
+ 178          USCI2_TWI_MasterCommunicationRate_TypeDef:TWI_MasterCommunicationRate:TWI主机模式下通讯速率
+ 179          *出口参数:void
+ 180          **************************************************/
+ 181          void USCI2_TWI_MasterCommunicationRate(USCI2_TWI_MasterCommunicationRate_TypeDef
+ 182                                                     TWI_MasterCommunicationRate)
+ 183          {
+ 184   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI2
+ 185   1        USXINX |= 0X02;
+ 186   1        TMCON = TMCON & 0X3F | 0X80; //选择usci2为TWI
+ 187   1      
+ 188   1        USXCON1 = TWI_MasterCommunicationRate;
+ 189   1      }
+ 190          
+ 191          /**************************************************
+ 192          *函数名称:void USCI2_TWI_Start(void)
+ 193          *函数功能:USCI2 TWI 起始位
+ 194          *入口参数:void
+ 195          *出口参数:void
+ 196          **************************************************/
+ 197          void USCI2_TWI_Start(void)
+ 198          {
+ 199   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI2
+ 200   1        USXINX |= 0X02;
+ 201   1        USXCON1 |= 0x20;
+ 202   1      }
+ 203          
+ 204          /**************************************************
+ 205          *函数名称:void USCI2_TWI_MasterModeStop(void)
+ 206          *函数功能:USCI2 TWI主机模式停止位
+ 207          *入口参数:void
+ 208          *出口参数:void
+ 209          **************************************************/
+ 210          void USCI2_TWI_MasterModeStop(void)
+ 211          {
+ 212   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI2
+ 213   1        USXINX |= 0X02;
+ 214   1        USXCON1 |= 0x10;
+ 215   1      }
+ 216          
+ 217          /**************************************************
+ 218          *函数名称:void USCI2_TWI_SlaveClockExtension(void)
+ 219          *函数功能:USCI2 TWI从机模式时钟延长功能位
+ 220          *入口参数:
+ 221          FunctionalState:NewState:使能/失能选择
+ 222          *出口参数:void
+ 223          **************************************************/
+ 224          void USCI2_TWI_SlaveClockExtension(FunctionalState NewState)
+ 225          {
+ 226   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI2
+ 227   1        USXINX |= 0X02;
+ 228   1        TMCON = TMCON & 0X3F | 0X80;
+ 229   1      
+ 230   1        if (NewState != DISABLE)
+ 231   1        {
+ 232   2          USXCON1 |= 0x40;
+ 233   2        }
+C51 COMPILER V9.54   SC95F_USCI2                                                           04/19/2023 15:54:52 PAGE 5   
+
+ 234   1        else
+ 235   1        {
+ 236   2          USXCON1 &= 0XBF;
+ 237   2        }
+ 238   1      }
+ 239          
+ 240          /**************************************************
+ 241          *函数名称:void USCI2_TWI_AcknowledgeConfig(FunctionalState NewState)
+ 242          *函数功能:TWI接收应答使能函数
+ 243          *入口参数:
+ 244          FunctionalState:NewState:接收应答使能/失能选择
+ 245          *出口参数:void
+ 246          **************************************************/
+ 247          void USCI2_TWI_AcknowledgeConfig(FunctionalState NewState)
+ 248          {
+ 249   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI2
+ 250   1        USXINX |= 0X02;
+ 251   1        TMCON = TMCON & 0X3F | 0X80;
+ 252   1      
+ 253   1        if (NewState != DISABLE)
+ 254   1        {
+ 255   2          USXCON0 |= 0X08;
+ 256   2        }
+ 257   1        else
+ 258   1        {
+ 259   2          USXCON0 &= 0XF7;
+ 260   2        }
+ 261   1      }
+ 262          
+ 263          /**************************************************
+ 264          *函数名称:void USCI2_TWI_GeneralCallCmd(FunctionalState NewState)
+ 265          *函数功能:TWI通用地址响应使能函数
+ 266          *入口参数:
+ 267          FunctionalState:NewState:通用地址响应使能/失能选择
+ 268          *出口参数:void
+ 269          **************************************************/
+ 270          void USCI2_TWI_GeneralCallCmd(FunctionalState NewState)
+ 271          {
+ 272   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI2
+ 273   1        USXINX |= 0X02;
+ 274   1        TMCON = TMCON & 0X3F | 0X80;
+ 275   1      
+ 276   1        if (NewState != DISABLE)
+ 277   1        {
+ 278   2          USXCON2 |= 0X01;
+ 279   2        }
+ 280   1        else
+ 281   1        {
+ 282   2          USXCON2 &= 0XFE;
+ 283   2        }
+ 284   1      }
+ 285          
+ 286          /*****************************************************
+ 287          *函数名称:FlagStatus USCI2_GetTWIStatus(USCI2_TWIState_TypeDef USCI2_TWIState)
+ 288          *函数功能:读取TWI状态
+ 289          *入口参数:
+ 290          USCI2_TWIState_TypeDef:USCI2_TWIState:TWI状态类型
+ 291          *出口参数:
+ 292          FlagStatus:USCI2_TWI标志状态    
+ 293          *****************************************************/
+ 294          FlagStatus USCI2_GetTWIStatus(USCI2_TWIState_TypeDef USCI2_TWIState)
+ 295          {
+C51 COMPILER V9.54   SC95F_USCI2                                                           04/19/2023 15:54:52 PAGE 6   
+
+ 296   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI2
+ 297   1        USXINX |= 0X02;
+ 298   1        if ((USXCON0 & 0x07) == USCI2_TWIState)
+ 299   1          return SET;
+ 300   1        else
+ 301   1          return RESET;
+ 302   1      }
+ 303          
+ 304          /*****************************************************
+ 305          *函数名称:void USCI2_TWI_Cmd(FunctionalState NewState)
+ 306          *函数功能:TWI功能开关函数
+ 307          *入口参数:
+ 308          FunctionalState:NewState:功能启动/关闭选择
+ 309          *出口参数:void
+ 310          *****************************************************/
+ 311          void USCI2_TWI_Cmd(FunctionalState NewState)
+ 312          {
+ 313   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI2
+ 314   1        USXINX |= 0X02;
+ 315   1        TMCON = TMCON & 0X3F | 0X80;
+ 316   1      
+ 317   1        if (NewState != DISABLE)
+ 318   1        {
+ 319   2          USXCON0 |= 0X80;
+ 320   2        }
+ 321   1        else
+ 322   1        {
+ 323   2          USXCON0 &= (~0X80);
+ 324   2        }
+ 325   1      }
+ 326          
+ 327          /*****************************************************
+ 328          *函数名称:void USCI2_TWI_SendData(uint8_t Data)
+ 329          *函数功能:TWI发送数据
+ 330          *入口参数:
+ 331          uint8_t:Data:发送的数据/地址
+ 332          *出口参数:void
+ 333          *****************************************************/
+ 334          void USCI2_TWI_SendData(uint8_t Data)
+ 335          {
+ 336   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI2
+ 337   1        USXINX |= 0X02;
+ 338   1        USXCON3 = Data;
+ 339   1      }
+ 340          /*****************************************************
+ 341          *函数名称:void USCI2_TWI_SendAddr(uint8_t Addr,USCI2_TWI_RWType RW)
+ 342          *函数功能:TWI发送地址，读写类型
+ 343          *入口参数:
+ 344          uint8_t:Addr:发送的地址
+ 345          USCI2_TWI_RWType:RW:读写类型
+ 346          *出口参数:void
+ 347          *****************************************************/
+ 348          void USCI2_TWI_SendAddr(uint8_t Addr, USCI2_TWI_RWType RW)
+ 349          {
+ 350   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI2
+ 351   1        USXINX |= 0X02;
+ 352   1        USXCON3 = (Addr << 1) | RW;
+ 353   1      }
+ 354          /*****************************************************
+ 355          *函数名称:uint8_t USCI2_TWI_ReceiveData(void)
+ 356          *函数功能:获得USXCON3中的值
+ 357          *入口参数:void
+C51 COMPILER V9.54   SC95F_USCI2                                                           04/19/2023 15:54:52 PAGE 7   
+
+ 358          *出口参数:
+ 359          uint8_t:接收的数据
+ 360          *****************************************************/
+ 361          uint8_t USCI2_TWI_ReceiveData(void)
+ 362          {
+ 363   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI2
+ 364   1        USXINX |= 0X02;
+ 365   1        return USXCON3;
+ 366   1      }
+ 367          
+ 368          /**************************************************
+ 369          *函数名称:void USCI2_UART_Init(uint32_t UARTFsys, uint32_t BaudRate, USCI2_UART_Mode_TypeDef Mode, USCI2_U
+             -ART_RX_TypeDef RxMode)
+ 370          *函数功能:UART初始化配置函数
+ 371          *入口参数:
+ 372          uint32_t:UARTFsys:系统时钟频率
+ 373          uint32_t:BaudRate:波特率
+ 374          USCI2_UART_Mode_TypeDef:Mode:UART工作模式
+ 375          USCI2_UART_RX_TypeDef:RxMode:接收允许选择
+ 376          *出口参数:void
+ 377          **************************************************/
+ 378          void USCI2_UART_Init(uint32_t UARTFsys, uint32_t BaudRate, USCI2_UART_Mode_TypeDef Mode,
+ 379                               USCI2_UART_RX_TypeDef RxMode)
+ 380          {
+ 381   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI2
+ 382   1        USXINX |= 0X02;
+ 383   1        TMCON = TMCON & 0X3F | 0XC0; //选择USCI2为UART
+ 384   1        USXCON0 = USXCON0 & 0X0F | Mode | RxMode;
+ 385   1      
+ 386   1        if (Mode == USCI2_UART_Mode_8B)
+ 387   1        {
+ 388   2          if (BaudRate == USCI2_UART_BaudRate_FsysDIV12)
+ 389   2          {
+ 390   3            USXCON0 &= 0XDF;
+ 391   3          }
+ 392   2          else if (BaudRate == USCI2_UART_BaudRate_FsysDIV4)
+ 393   2          {
+ 394   3            USXCON0 |= 0X20;
+ 395   3          }
+ 396   2        }
+ 397   1        else
+ 398   1        {
+ 399   2          USXCON2 = UARTFsys / BaudRate / 256;
+ 400   2          USXCON1 = UARTFsys / BaudRate % 256;
+ 401   2        }
+ 402   1      }
+ 403          
+ 404          /*****************************************************
+ 405          *函数名称:void USCI2_UART_SendData8(uint8_t Data)
+ 406          *函数功能:USCI2_UART发送8位数据
+ 407          *入口参数:
+ 408          uint8_t:Data:发送的数据
+ 409          *出口参数:void
+ 410          *****************************************************/
+ 411          void USCI2_UART_SendData8(uint8_t Data)
+ 412          {
+ 413   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI2
+ 414   1        USXINX |= 0X02;
+ 415   1        USXCON3 = Data;
+ 416   1      }
+ 417          
+ 418          /*****************************************************
+C51 COMPILER V9.54   SC95F_USCI2                                                           04/19/2023 15:54:52 PAGE 8   
+
+ 419          *函数名称:uint8_t USCI2_UART_ReceiveData8(void)
+ 420          *函数功能:获得USXCON3中的值
+ 421          *入口参数:void
+ 422          *出口参数:
+ 423          uint8_t:接收的数据
+ 424          *****************************************************/
+ 425          uint8_t USCI2_UART_ReceiveData8(void)
+ 426          {
+ 427   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI2
+ 428   1        USXINX |= 0X02;
+ 429   1        return USXCON3;
+ 430   1      }
+ 431          
+ 432          /*****************************************************
+ 433          *函数名称:void USCI2_UART_SendData9(uint16_t Data)
+ 434          *函数功能:UART发送9位数据
+ 435          *入口参数:
+ 436          uint16_t:Data:发送的数据
+ 437          *出口参数:void
+ 438          *****************************************************/
+ 439          void USCI2_UART_SendData9(uint16_t Data)
+ 440          {
+ 441   1        uint8_t Data_9Bit;
+ 442   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI2
+ 443   1        USXINX |= 0X02;
+ 444   1      
+ 445   1        Data_9Bit = (Data >> 8);
+ 446   1      
+ 447   1        if (Data_9Bit)
+ 448   1        {
+ 449   2          USXCON0 |= 0x08;
+ 450   2        }
+ 451   1        else
+ 452   1        {
+ 453   2          USXCON0 &= 0xf7;
+ 454   2        }
+ 455   1      
+ 456   1        USXCON3 = (uint8_t)Data;
+ 457   1      }
+ 458          
+ 459          /*****************************************************
+ 460          *函数名称:uint16_t USCI2_UART_ReceiveData9(void)
+ 461          *函数功能:获得USXCON3中的值及第九位的值
+ 462          *入口参数:void
+ 463          *出口参数:
+ 464          uint16_t:接收的数据
+ 465          *****************************************************/
+ 466          uint16_t USCI2_UART_ReceiveData9(void)
+ 467          {
+ 468   1        uint16_t Data9;
+ 469   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI2
+ 470   1        USXINX |= 0X02;
+ 471   1      
+ 472   1        Data9 = USXCON3 + ((uint16_t)(USXCON0 & 0X04) << 6);
+ 473   1        return Data9;
+ 474   1      }
+ 475          
+ 476          /*****************************************************
+ 477          *函数名称:void USCI2_ITConfig(FunctionalState NewState, PriorityStatus Priority)
+ 478          *函数功能:USCI2中断初始化
+ 479          *入口参数:
+ 480          FunctionalState:NewState:中断使能/关闭选择
+C51 COMPILER V9.54   SC95F_USCI2                                                           04/19/2023 15:54:52 PAGE 9   
+
+ 481          PriorityStatus:Priority:中断优先级选择
+ 482          *出口参数:void
+ 483          *****************************************************/
+ 484          void USCI2_ITConfig(FunctionalState NewState, PriorityStatus Priority)
+ 485          {
+ 486   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI2
+ 487   1        USXINX |= 0X02;
+ 488   1        if (NewState != DISABLE)
+ 489   1        {
+ 490   2          IE2 |= 0x02;
+ 491   2        }
+ 492   1        else
+ 493   1        {
+ 494   2          IE2 &= 0xFD;
+ 495   2        }
+ 496   1      
+ 497   1        /************************************************************/
+ 498   1        if (Priority != LOW)
+ 499   1        {
+ 500   2          IP2 |= 0x02;
+ 501   2        }
+ 502   1        else
+ 503   1        {
+ 504   2          IP2 &= 0xFD;
+ 505   2        }
+ 506   1      }
+ 507          
+ 508          /*****************************************************
+ 509          *函数名称:FlagStatus USCI2_GetFlagStatus(USCI2_Flag_TypeDef USCI2_FLAG)
+ 510          *函数功能:获得USCI2标志状态
+ 511          *入口参数:
+ 512          USCI2_Flag_Typedef:USCI2_Flag:中断标志位选择
+ 513          *出口参数:
+ 514          FlagStatus:USCI2标志状态
+ 515          *****************************************************/
+ 516          FlagStatus USCI2_GetFlagStatus(USCI2_Flag_TypeDef USCI2_FLAG)
+ 517          {
+ 518   1        FlagStatus bitstatus = RESET;
+ 519   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI2
+ 520   1        USXINX |= 0X02;
+ 521   1      #if defined(SC95F8x1x) || defined(SC95F7x1x) || defined(SC95FWxx)
+                if ((USCI2_FLAG == USCI2_SPI_FLAG_SPIF) || (USCI2_FLAG == USCI2_SPI_FLAG_WCOL) || (USCI2_FLAG == USCI2_T
+             -WI_FLAG_TXRXnE))
+              #endif
+ 524   1      #if defined(SC95F8x2x) || defined(SC95F7x2x) || defined(SC95F8x3x) || defined(SC95F7x3x) || defined (SC95F
+             -8x6x) || defined (SC95F7x6x)\
+ 525   1                      || defined (SC95F8x1xB) || defined (SC95F7x1xB) || defined (SC95R751) || defined (SC95F7610B) || defined
+             - (SC95F7619B)
+ 526   1          if ((USCI2_FLAG == USCI2_SPI_FLAG_SPIF) || (USCI2_FLAG == USCI2_SPI_FLAG_WCOL) || (USCI2_FLAG == USCI2
+             -_SPI_FLAG_TXE) || (USCI2_FLAG == USCI2_TWI_FLAG_TXRXnE))
+ 527   1      #endif
+ 528   1          {
+ 529   2            if ((USCI2_FLAG & USXCON1) != (uint8_t)RESET)
+ 530   2            {
+ 531   3              bitstatus = SET;
+ 532   3            }
+ 533   2            else
+ 534   2            {
+ 535   3              bitstatus = RESET;
+ 536   3            }
+ 537   2          }
+ 538   1          else
+C51 COMPILER V9.54   SC95F_USCI2                                                           04/19/2023 15:54:52 PAGE 10  
+
+ 539   1          {
+ 540   2            if ((USCI2_FLAG & USXCON0) != (uint8_t)RESET)
+ 541   2            {
+ 542   3              bitstatus = SET;
+ 543   3            }
+ 544   2            else
+ 545   2            {
+ 546   3              bitstatus = RESET;
+ 547   3            }
+ 548   2          }
+ 549   1      
+ 550   1        return bitstatus;
+ 551   1      }
+ 552          
+ 553          /*****************************************************
+ 554          *函数名称:void USCI2_ClearFlag(USCI2_Flag_TypeDef USCI2_FLAG)
+ 555          *函数功能:清除USCI2标志状态
+ 556          *入口参数:
+ 557          USCI2_Flag_TypeDef:USCI2_FLAG:所需清除的标志位
+ 558          *出口参数:void
+ 559          *****************************************************/
+ 560          void USCI2_ClearFlag(USCI2_Flag_TypeDef USCI2_FLAG)
+ 561          {
+ 562   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI2
+ 563   1        USXINX |= 0X02;
+ 564   1      #if defined(SC95F8x1x) || defined(SC95F7x1x) || defined(SC95FWxx)
+              
+                if ((USCI2_FLAG == USCI2_SPI_FLAG_SPIF) || (USCI2_FLAG == USCI2_SPI_FLAG_WCOL) || (USCI2_FLAG == USCI2_T
+             -WI_FLAG_TXRXnE))
+              
+              #elif defined(SC95F8x2x) || defined(SC95F7x2x) || defined(SC95F8x3x) || defined(SC95F7x3x) || defined (SC9
+             -5F8x6x) || defined (SC95F7x6x)\
+                      || defined (SC95F8x1xB) || defined (SC95F7x1xB) || defined (SC95R751) || defined (SC95F7610B) || defined 
+             -(SC95F7619B)
+ 570   1      
+ 571   1        if ((USCI2_FLAG == USCI2_SPI_FLAG_SPIF) || (USCI2_FLAG == USCI2_SPI_FLAG_WCOL) || (USCI2_FLAG == USCI2_S
+             -PI_FLAG_TXE) || (USCI2_FLAG == USCI2_TWI_FLAG_TXRXnE))
+ 572   1      
+ 573   1      #endif
+ 574   1        {
+ 575   2          USXCON1 &= (~USCI2_FLAG); //操作寄存器USXCON1
+ 576   2        }
+ 577   1        else if ((USCI2_FLAG == USCI2_UART_FLAG_TI) || (USCI2_FLAG == USCI2_UART_FLAG_RI))
+ 578   1        {
+ 579   2      #if defined(SC95F8x3x) || defined(SC95F7x3x) || defined (SC95F8x6x) || defined (SC95F7x6x)  || defined (SC
+             -95F8x1xB) || defined (SC95F7x1xB)
+ 580   2          USXCON0 = USXCON0  & 0xFC | USCI2_FLAG; //写1清零
+ 581   2      #else
+                  USXCON0 &= (~USCI2_FLAG); //写0清零
+              #endif
+ 584   2        }
+ 585   1        else
+ 586   1        {
+ 587   2          USXCON0 &= (~USCI2_FLAG); //操作寄存器USXCON0
+ 588   2        }
+ 589   1      }
+ 590          #else
+              
+              /**************************************************
+              *函数名称:void USCI2_DeInit(void)
+              *函数功能:USCI2相关寄存器复位至缺省值
+              *入口参数:void
+C51 COMPILER V9.54   SC95F_USCI2                                                           04/19/2023 15:54:52 PAGE 11  
+
+              *出口参数:void
+              **************************************************/
+              void USCI2_DeInit(void)
+              {
+                TMCON &= 0X3F;
+                US2CON0 = 0X00;
+                US2CON1 = 0X00;
+                US2CON2 = 0X00;
+                US2CON3 = 0X00;
+                IE2 &= (~0X02);
+                IP2 &= (~0X02);
+              }
+              
+              /**************************************************
+              *函数名称:void USCI2_SPI_Init(USCI2_SPI_FirstBit_TypeDef FirstBit, USCI2_SPI_BaudRatePrescaler_TypeDef Bau
+             -dRatePrescaler,USCI2_SPI_Mode_TypeDef Mode,
+                                                                       USCI2_SPI_ClockPolarity_TypeDef ClockPolarity, USCI2_SPI_ClockPhase_TypeDef ClockPhase,USCI2_SPI_T
+             -XE_INT_TypeDef SPI_TXE_INT,USCI2_TransmissionMode_TypeDef TransmissionMode)
+              *函数功能:SPI初始化配置函数
+              *入口参数:
+              USCI2_SPI_FirstBit_TypeDef:FirstBit:优先传送位选择（MSB/LSB）
+              USCI2_SPI_BaudRatePrescaler_TypeDef:BaudRatePrescaler:SPI时钟频率选择
+              USCI2_SPI_Mode_TypeDef:Mode:SPI工作模式选择
+              USCI2_SPI_ClockPolarity_TypeDef:ClockPolarity:SPI时钟极性选择
+              USCI2_SPI_ClockPhase_TypeDef:ClockPhase:SPI时钟相位选择
+              USCI2_SPI_TXE_INT_TypeDef:SPI_TXE_INT:发送缓存器中断允许选择,该功能在SC95FXX1X芯片上无效
+              USCI2_TransmissionMode_TypeDef:TransmissionMode:SPI传输模式选择 8/16位
+              *出口参数:void
+              **************************************************/
+              void USCI2_SPI_Init(USCI2_SPI_FirstBit_TypeDef FirstBit,
+                                  USCI2_SPI_BaudRatePrescaler_TypeDef BaudRatePrescaler, USCI2_SPI_Mode_TypeDef Mode,
+                                  USCI2_SPI_ClockPolarity_TypeDef ClockPolarity, USCI2_SPI_ClockPhase_TypeDef ClockPhase
+             -,
+                                  USCI2_SPI_TXE_INT_TypeDef SPI_TXE_INT, USCI2_TransmissionMode_TypeDef TransmissionMode
+             -)
+              {
+                TMCON = (TMCON & 0X3F) | 0X40;
+              #if defined(SC95F8x1x) || defined(SC95F7x1x) || defined(SC95FWxx)
+                SPI_TXE_INT = USCI2_SPI_TXE_DISINT; //SPI_TXE_INT该功能在SC95FXX1X芯片上无效
+                US2CON1 = US2CON1 & (~0X05) | FirstBit | TransmissionMode;
+              #endif
+              #if defined(SC95F8x2x) || defined(SC95F7x2x)
+                US2CON1 = US2CON1 & (~0X05) | FirstBit | SPI_TXE_INT | TransmissionMode;
+              #endif
+                US2CON0 = US2CON0 & 0X80 | BaudRatePrescaler | Mode | ClockPolarity | ClockPhase;
+              }
+              
+              /**************************************************
+              *函数名称:void USCI2_TransmissionMode(USCI2_TransmissionMode_TypeDef TransmissionMode)
+              *函数功能:SPI 传输模式配置函数
+              *入口参数:
+              USCI2_TransmissionMode_TypeDef:TransmissionMode:SPI传输模式选择 8/16e位
+              *出口参数:void
+              **************************************************/
+              void USCI2_TransmissionMode(USCI2_TransmissionMode_TypeDef TransmissionMode)
+              {
+              
+                TMCON = (TMCON & 0X3F) | 0X40;
+                if (TransmissionMode == USCI2_SPI_DATA8)
+                {
+                  US2CON1 &= 0xFD;
+                }
+C51 COMPILER V9.54   SC95F_USCI2                                                           04/19/2023 15:54:52 PAGE 12  
+
+                else
+                {
+                  US2CON1 |= 0x02;
+                }
+              }
+              
+              /*****************************************************
+              *函数名称:void USCI2_SPI_Cmd(FunctionalState NewState)
+              *函数功能:SPI功能开关函数
+              *入口参数:
+              FunctionalState:NewState:功能启动/关闭选择
+              *出口参数:void
+              *****************************************************/
+              void USCI2_SPI_Cmd(FunctionalState NewState)
+              {
+                TMCON = (TMCON & 0X3F) | 0X40;
+              
+                if (NewState != DISABLE)
+                {
+                  US2CON0 |= 0X80;
+                }
+                else
+                {
+                  US2CON0 &= (~0X80);
+                }
+              }
+              
+              /*****************************************************
+              *函数名称:void USCI2_SPI_SendData_8(uint8_t Data)
+              *函数功能:USCI2 SPI发送数据
+              *入口参数:
+              uint8_t:Data:发送的数据
+              *出口参数:void
+              *****************************************************/
+              void USCI2_SPI_SendData_8(uint8_t Data)
+              {
+                US2CON2 = Data;
+              }
+              
+              /*****************************************************
+              *函数名称:uint8_t USCI2_SPI_ReceiveData_8(void)
+              *函数功能:获得US2CON2中的值
+              *入口参数:void
+              *出口参数:
+              uint8_t:接收的数据
+              *****************************************************/
+              uint8_t USCI2_SPI_ReceiveData_8(void)
+              {
+                return US2CON2;
+              }
+              
+              /*****************************************************
+              *函数名称:void USCI2_SPI_SendData_16(uint16_t Data)
+              *函数功能:US2CON2 SPI发送数据
+              *入口参数:
+              uint16_t:Data:发送的数据
+              *出口参数:void
+              *****************************************************/
+              void USCI2_SPI_SendData_16(uint16_t Data)
+              {
+                US2CON3 = (uint8_t)(Data >> 8);
+                US2CON2 = (uint8_t)Data;
+C51 COMPILER V9.54   SC95F_USCI2                                                           04/19/2023 15:54:52 PAGE 13  
+
+              }
+              
+              /*****************************************************
+              *函数名称:uint16_t USCI2_SPI_ReceiveData_16(void)
+              *函数功能:获得US2CON2中的值
+              *入口参数:void
+              *出口参数:
+              uint16_t:接收的数据
+              *****************************************************/
+              uint16_t USCI2_SPI_ReceiveData_16(void)
+              {
+                uint16_t SPI_data;
+                SPI_data = (uint16_t)((US2CON3 << 8) | US2CON2);
+                return SPI_data;
+              }
+              
+              /**************************************************
+              *函数名称:void USCI2_TWI_Slave_Init(uint8_t TWI_Address)
+              *函数功能:USCI2 TWI 从机初始化配置函数
+              *入口参数:
+              uint8_t:TWI_Address:TWI作为从机时的7位从机地址
+              *出口参数:void
+              **************************************************/
+              void USCI2_TWI_Slave_Init(uint8_t TWI_Address)
+              {
+                TMCON = TMCON & 0X3F | 0X80;
+                US2CON2 = TWI_Address << 1;
+              }
+              
+              /**************************************************
+              *函数名称:void USCI2_TWI_MasterCommunicationRate(USCI2_TWI_MasterCommunicationRate_TypeDef TWI_MasterCommu
+             -nicationRate)
+              *函数功能:USCI2 TWI主机模式下通讯速率设定
+              *入口参数:
+              USCI2_TWI_MasterCommunicationRate_TypeDef:TWI_MasterCommunicationRate:TWI主机模式下通讯速率
+              *出口参数:void
+              **************************************************/
+              void USCI2_TWI_MasterCommunicationRate(USCI2_TWI_MasterCommunicationRate_TypeDef
+                                                         TWI_MasterCommunicationRate)
+              {
+                TMCON = TMCON & 0X3F | 0X80; //选择usci2为TWI
+              
+                US2CON1 = TWI_MasterCommunicationRate;
+              }
+              
+              /**************************************************
+              *函数名称:void USCI2_TWI_Start(void)
+              *函数功能:USCI2 TWI 起始位
+              *入口参数:void
+              *出口参数:void
+              **************************************************/
+              void USCI2_TWI_Start(void)
+              {
+                US2CON1 |= 0x20;
+              }
+              
+              /**************************************************
+              *函数名称:void USCI2_TWI_MasterModeStop(void)
+              *函数功能:USCI2 TWI主机模式停止位
+              *入口参数:void
+              *出口参数:void
+              **************************************************/
+C51 COMPILER V9.54   SC95F_USCI2                                                           04/19/2023 15:54:52 PAGE 14  
+
+              void USCI2_TWI_MasterModeStop(void)
+              {
+                US2CON1 |= 0x10;
+              }
+              
+              /**************************************************
+              *函数名称:void USCI2_TWI_SlaveClockExtension(void)
+              *函数功能:USCI2 TWI从机模式时钟延长功能位
+              *入口参数:void
+              *出口参数:void
+              **************************************************/
+              void USCI2_TWI_SlaveClockExtension(FunctionalState NewState)
+              {
+                TMCON = TMCON & 0X3F | 0X80;
+              
+                if (NewState != DISABLE)
+                {
+                  US2CON1 |= 0x40;
+                }
+                else
+                {
+                  US2CON1 &= 0XBF;
+                }
+              }
+              
+              /**************************************************
+              *函数名称:void USCI2_TWI_AcknowledgeConfig(FunctionalState NewState)
+              *函数功能:TWI接收应答使能函数
+              *入口参数:
+              FunctionalState:NewState:接收应答使能/失能选择
+              *出口参数:void
+              **************************************************/
+              void USCI2_TWI_AcknowledgeConfig(FunctionalState NewState)
+              {
+                TMCON = TMCON & 0X3F | 0X80;
+              
+                if (NewState != DISABLE)
+                {
+                  US2CON0 |= 0X08;
+                }
+                else
+                {
+                  US2CON0 &= 0XF7;
+                }
+              }
+              
+              /**************************************************
+              *函数名称:void USCI2_TWI_GeneralCallCmd(FunctionalState NewState)
+              *函数功能:TWI通用地址响应使能函数
+              *入口参数:
+              FunctionalState:NewState:接收应答使能/失能选择
+              *出口参数:void
+              **************************************************/
+              void USCI2_TWI_GeneralCallCmd(FunctionalState NewState)
+              {
+                TMCON = TMCON & 0X3F | 0X80;
+              
+                if (NewState != DISABLE)
+                {
+                  US2CON2 |= 0X01;
+                }
+                else
+C51 COMPILER V9.54   SC95F_USCI2                                                           04/19/2023 15:54:52 PAGE 15  
+
+                {
+                  US2CON2 &= 0XFE;
+                }
+              }
+              
+              /*****************************************************
+              *函数名称:FlagStatus USCI2_GetTWIStatus(USCI2_TWIState_TypeDef USCI2_TWIState)
+              *函数功能:读取TWI状态
+              *入口参数:
+              USCI2_TWIState_TypeDef:USCI2_TWIState:TWI状态类型
+              *出口参数:
+              FlagStatus:USCI2_TWI标志状态    
+              *****************************************************/
+              FlagStatus USCI2_GetTWIStatus(USCI2_TWIState_TypeDef USCI2_TWIState)
+              {
+                if ((US2CON0 & 0x07) == USCI2_TWIState)
+                  return SET;
+                else
+                  return RESET;
+              }
+              
+              /*****************************************************
+              *函数名称:void USCI2_TWI_Cmd(FunctionalState NewState)
+              *函数功能:TWI功能开关函数
+              *入口参数:
+              FunctionalState:NewState:功能启动/关闭选择
+              *出口参数:void
+              *****************************************************/
+              void USCI2_TWI_Cmd(FunctionalState NewState)
+              {
+                TMCON = TMCON & 0X3F | 0X80;
+              
+                if (NewState != DISABLE)
+                {
+                  US2CON0 |= 0X80;
+                }
+                else
+                {
+                  US2CON0 &= (~0X80);
+                }
+              }
+              
+              /*****************************************************
+              *函数名称:void USCI2_TWI_SendData(uint8_t Data)
+              *函数功能:TWI发送数据
+              *入口参数:
+              uint8_t:Data:发送的数据
+              *出口参数:void
+              *****************************************************/
+              void USCI2_TWI_SendData(uint8_t Data)
+              {
+                US2CON3 = Data;
+              }
+              /*****************************************************
+              *函数名称:void USCI2_TWI_SendAddr(uint8_t Addr,USCI2_TWI_RWType RW)
+              *函数功能:TWI发送地址，读写类型
+              *入口参数:
+              uint8_t:Addr:发送的地址
+              USCI2_TWI_RWType:RW:读写类型
+              *出口参数:void
+              *****************************************************/
+              void USCI2_TWI_SendAddr(uint8_t Addr, USCI2_TWI_RWType RW)
+C51 COMPILER V9.54   SC95F_USCI2                                                           04/19/2023 15:54:52 PAGE 16  
+
+              {
+                US2CON3 = (Addr << 1) | RW;
+              }
+              /*****************************************************
+              *函数名称:uint8_t USCI2_TWI_ReceiveData(void)
+              *函数功能:获得US2CON3中的值
+              *入口参数:void
+              *出口参数:
+              uint8_t:接收的数据
+              *****************************************************/
+              uint8_t USCI2_TWI_ReceiveData(void)
+              {
+                return US2CON3;
+              }
+              
+              /**************************************************
+              *函数名称:void USCI2_UART_Init(uint32_t UARTFsys, uint32_t BaudRate, USCI2_UART_Mode_TypeDef Mode, USCI2_U
+             -ART_RX_TypeDef RxMode)
+              *函数功能:UART初始化配置函数
+              *入口参数:
+              uint32_t:UARTFsys:系统时钟频率
+              uint32_t:BaudRate:波特率
+              USCI2_UART_Mode_TypeDef:Mode:UART1工作模式
+              USCI2_UART_RX_TypeDef:RxMode:接收允许选择
+              *出口参数:void
+              **************************************************/
+              void USCI2_UART_Init(uint32_t UARTFsys, uint32_t BaudRate, USCI2_UART_Mode_TypeDef Mode,
+                                   USCI2_UART_RX_TypeDef RxMode)
+              {
+                TMCON |= 0xC0;
+                US2CON0 = US2CON0 & 0X0F | Mode | RxMode;
+              
+                if (Mode == USCI2_UART_Mode_8B)
+                {
+                  if (BaudRate == USCI2_UART_BaudRate_FsysDIV12)
+                  {
+                    US2CON0 &= 0XDF;
+                  }
+                  else if (BaudRate == USCI2_UART_BaudRate_FsysDIV4)
+                  {
+                    US2CON0 |= 0X20;
+                  }
+                }
+                else
+                {
+                  US2CON2 = UARTFsys / BaudRate / 256;
+                  US2CON1 = UARTFsys / BaudRate % 256;
+                }
+              }
+              
+              /*****************************************************
+              *函数名称:void USCI2_UART_SendData8(uint8_t Data)
+              *函数功能:USCI2 UART1发送8位数据
+              *入口参数:
+              uint8_t:Data:发送的数据
+              *出口参数:void
+              *****************************************************/
+              void USCI2_UART_SendData8(uint8_t Data)
+              {
+                US2CON3 = Data;
+              }
+              
+C51 COMPILER V9.54   SC95F_USCI2                                                           04/19/2023 15:54:52 PAGE 17  
+
+              /*****************************************************
+              *函数名称:uint8_t USCI2_UART_ReceiveData8(void)
+              *函数功能:获得US2CON3中的值
+              *入口参数:void
+              *出口参数:
+              uint8_t:接收的数据
+              *****************************************************/
+              uint8_t USCI2_UART_ReceiveData8(void)
+              {
+                return US2CON3;
+              }
+              
+              /*****************************************************
+              *函数名称:void USCI2_UART_SendData9(uint16_t Data)
+              *函数功能:UART发送9位数据
+              *入口参数:
+              uint16_t:Data:发送的数据
+              *出口参数:void
+              *****************************************************/
+              void USCI2_UART_SendData9(uint16_t Data)
+              {
+                uint8_t Data_9Bit;
+                Data_9Bit = (Data >> 8);
+              
+                if (Data_9Bit)
+                {
+                  US2CON0 |= 0x08;
+                }
+                else
+                {
+                  US2CON0 &= 0xf7;
+                }
+              
+                US2CON3 = (uint8_t)Data;
+              }
+              
+              /*****************************************************
+              *函数名称:uint16_t USCI2_UART_ReceiveData9(void)
+              *函数功能:获得US2CON3中的值及第九位的值
+              *入口参数:void
+              *出口参数:
+              uint16_t:接收的数据
+              *****************************************************/
+              uint16_t USCI2_UART_ReceiveData9(void)
+              {
+                uint16_t Data9;
+                Data9 = US2CON3 + ((uint16_t)(US2CON0 & 0X04) << 6);
+                return Data9;
+              }
+              
+              /*****************************************************
+              *函数名称:void USCI2_ITConfig(FunctionalState NewState, PriorityStatus Priority)
+              *函数功能:USCI2中断初始化
+              *入口参数:
+              FunctionalState:NewState:中断使能/关闭选择
+              PriorityStatus:Priority:中断优先级选择
+              *出口参数:void
+              *****************************************************/
+              void USCI2_ITConfig(FunctionalState NewState, PriorityStatus Priority)
+              {
+                if (NewState != DISABLE)
+                {
+C51 COMPILER V9.54   SC95F_USCI2                                                           04/19/2023 15:54:52 PAGE 18  
+
+                  IE2 |= 0x02;
+                }
+                else
+                {
+                  IE2 &= 0xFD;
+                }
+              
+                /************************************************************/
+                if (Priority != LOW)
+                {
+                  IP2 |= 0x02;
+                }
+                else
+                {
+                  IP2 &= 0xFD;
+                }
+              }
+              
+              /*****************************************************
+              *函数名称:FlagStatus USCI2_GetFlagStatus(USCI2_Flag_TypeDef USCI2_FLAG)
+              *函数功能:获得USCI2标志状态
+              *入口参数:
+              USCI2_Flag_Typedef:USCI2_Flag:所需获取的标志位
+              *出口参数:
+              FlagStatus:USCI2标志状态
+              *****************************************************/
+              FlagStatus USCI2_GetFlagStatus(USCI2_Flag_TypeDef USCI2_FLAG)
+              {
+                FlagStatus bitstatus = RESET;
+              
+              #if defined(SC95F8x1x) || defined(SC95F7x1x) || defined(SC95FWxx)
+              
+                if ((USCI2_FLAG == USCI2_SPI_FLAG_SPIF) || (USCI2_FLAG == USCI2_SPI_FLAG_WCOL))
+              #endif
+              #if defined(SC95F8x2x) || defined(SC95F7x2x)
+                  if ((USCI2_FLAG == USCI2_SPI_FLAG_SPIF) || (USCI2_FLAG == USCI2_SPI_FLAG_WCOL) || (USCI2_FLAG == USCI2
+             -_SPI_FLAG_TXE))
+              #endif
+                  {
+                    if ((USCI2_FLAG & US2CON1) != (uint8_t)RESET)
+                    {
+                      bitstatus = SET;
+                    }
+                    else
+                    {
+                      bitstatus = RESET;
+                    }
+                  }
+                  else
+                  {
+                    if ((USCI2_FLAG & US2CON0) != (uint8_t)RESET)
+                    {
+                      bitstatus = SET;
+                    }
+                    else
+                    {
+                      bitstatus = RESET;
+                    }
+                  }
+              
+                return bitstatus;
+              }
+C51 COMPILER V9.54   SC95F_USCI2                                                           04/19/2023 15:54:52 PAGE 19  
+
+              
+              /*****************************************************
+              *函数名称:void USCI2_ClearFlag(USCI2_Flag_TypeDef USCI2_FLAG)
+              *函数功能:清除USCI2标志状态
+              *入口参数:
+              USCI2_Flag_TypeDef:USCI2_FLAG:所需清除的标志位
+              *出口参数:void
+              *****************************************************/
+              void USCI2_ClearFlag(USCI2_Flag_TypeDef USCI2_FLAG)
+              {
+                if ((USCI2_FLAG == USCI2_SPI_FLAG_SPIF) || (USCI2_FLAG == USCI2_SPI_FLAG_WCOL))
+                {
+                  US2CON1 &= (~USCI2_FLAG);
+                }
+                else
+                {
+                  US2CON0 &= (~USCI2_FLAG);
+                }
+              }
+              #endif
+1105          /******************* (C) COPYRIGHT 2020 SinOne Microelectronics *****END OF FILE****/
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    798    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----      17
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

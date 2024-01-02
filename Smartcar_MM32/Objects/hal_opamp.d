@@ -1,0 +1,10 @@
+.\objects\hal_opamp.o: MN32_HAL\hal_opamp.c
+.\objects\hal_opamp.o: .\Include\types.h
+.\objects\hal_opamp.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\hal_opamp.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdbool.h
+.\objects\hal_opamp.o: MN32_HAL\hal_opamp.h
+.\objects\hal_opamp.o: .\Include\reg_opamp.h
+.\objects\hal_opamp.o: .\Include\reg_common.h
+.\objects\hal_opamp.o: .\Include\core_cm0.h
+.\objects\hal_opamp.o: .\Include\cmsis_compiler.h
+.\objects\hal_opamp.o: .\Include\cmsis_armcc.h

@@ -1,0 +1,531 @@
+C51 COMPILER V9.00   SC95F_GPIO                                                            07/01/2021 08:32:27 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE SC95F_GPIO
+OBJECT MODULE PLACED IN ..\Output\sc95f_gpio.obj
+COMPILER INVOKED BY: D:\Program Files (x86)\keil\C51\BIN\C51.EXE ..\FWLib\SC95F_Lib\src\sc95f_gpio.c LARGE OMF2 BROWSE I
+                    -NCDIR(..\FWLib\SC95F_Lib\inc;..\User) DEFINE(SC95F8x2x) DEBUG PRINT(..\List\sc95f_gpio.lst) OBJECT(..\Output\sc95f_gpio.
+                    -obj)
+
+line level    source
+
+   1          //************************************************************
+   2          //  Copyright (c) 深圳市赛元微电子有限公司
+   3          //      文件名称        : sc95f_gpio.c
+   4          //      作者            :
+   5          //      模块功能        : GPIO固件库函数C文件
+   6          //      局部函数列表:
+   7          //  最后更正日期: 2021/05/19
+   8          //      版本            : V1.10003
+   9          //  说明        ：该文件仅适用于SC95Fxx1x、SC95Fxx2x系列芯片
+  10          //*************************************************************
+  11          
+  12          #include "sc95f_gpio.h"
+  13          
+  14          /**************************************************
+  15          *函数名称：void GPIO_DeInit(void)
+  16          *函数功能：GPIO相关寄存器复位至缺省值
+  17          *入口参数：void
+  18          *出口参数：void
+  19          **************************************************/
+  20          void GPIO_DeInit(void)
+  21          {
+  22   1      #if defined (SC95F8x1x) || defined (SC95F7x1x) || defined (SC92FWxx)  ||  defined (SC95F8x3x) ||  defined 
+             -(SC95F7x3x)
+                P0CON = 0x00;
+                P1CON = 0x00;
+                P2CON = 0x00;
+                P3CON = 0x00;
+                P4CON = 0x00;
+                P5CON = 0x00;
+                P0PH = 0x00;
+                P1PH = 0x00;
+                P2PH = 0x00;
+                P3PH = 0x00;
+                P4PH = 0x00;
+                P5PH = 0x00;
+                P0 = P1 = P2 = P3 = P4 = P5 = 0;
+              #endif
+  37   1      #if defined (SC95F8x2x) || defined (SC95F7x2x)
+  38   1        P0CON = 0x00;
+  39   1        P1CON = 0x00;
+  40   1        P2CON = 0x00;
+  41   1        P5CON = 0x00;
+  42   1        P0PH = 0x00;
+  43   1        P1PH = 0x00;
+  44   1        P2PH = 0x00;
+  45   1        P5PH = 0x00;
+  46   1        P0 = P1 = P2 = P5 = 0;
+  47   1      #endif
+  48   1      }
+  49          
+  50          /**************************************************
+  51          *函数名称：void GPIO_Init(GPIO_TypeDef GPIOx, GPIO_Pin_TypeDef PortPins, GPIO_Mode_TypeDef GPIO_Mode)
+  52          *函数功能：GPIO口模式配置初始化
+C51 COMPILER V9.00   SC95F_GPIO                                                            07/01/2021 08:32:27 PAGE 2   
+
+  53          *入口参数：GPIOx                选择操作的GPIO口
+  54                             PortPins             选择GPIO管脚Pxy
+  55                             GPIO_Mode    选择GPIO口模式（高阻输入、上拉输入、推挽输出）
+  56          *出口参数：void
+  57          **************************************************/
+  58          void GPIO_Init(GPIO_TypeDef GPIOx, uint8_t PortPins, GPIO_Mode_TypeDef GPIO_Mode)
+  59          {
+  60   1        if(GPIOx == GPIO0)
+  61   1        {
+  62   2          if(GPIO_Mode == GPIO_MODE_IN_HI)
+  63   2          {
+  64   3            P0CON &= ~PortPins;
+  65   3            P0PH  &= ~PortPins;
+  66   3          }
+  67   2      
+  68   2          if(GPIO_Mode == GPIO_MODE_IN_PU)
+  69   2          {
+  70   3            P0CON &= ~PortPins;
+  71   3            P0PH  |= PortPins;
+  72   3          }
+  73   2      
+  74   2          if(GPIO_Mode == GPIO_MODE_OUT_PP)
+  75   2          {
+  76   3            P0CON |= PortPins;
+  77   3          }
+  78   2        }
+  79   1        else
+  80   1          if(GPIOx == GPIO1)
+  81   1          {
+  82   2            if(GPIO_Mode == GPIO_MODE_IN_HI)
+  83   2            {
+  84   3              P1CON &= ~PortPins;
+  85   3              P1PH  &= ~PortPins;
+  86   3            }
+  87   2      
+  88   2            if(GPIO_Mode == GPIO_MODE_IN_PU)
+  89   2            {
+  90   3              P1CON &= ~PortPins;
+  91   3              P1PH  |= PortPins;
+  92   3            }
+  93   2      
+  94   2            if(GPIO_Mode == GPIO_MODE_OUT_PP)
+  95   2            {
+  96   3              P1CON |= PortPins;
+  97   3            }
+  98   2          }
+  99   1          else
+ 100   1            if(GPIOx == GPIO2)
+ 101   1            {
+ 102   2              if(GPIO_Mode == GPIO_MODE_IN_HI)
+ 103   2              {
+ 104   3                P2CON &= ~PortPins;
+ 105   3                P2PH  &= ~PortPins;
+ 106   3              }
+ 107   2      
+ 108   2              if(GPIO_Mode == GPIO_MODE_IN_PU)
+ 109   2              {
+ 110   3                P2CON &= ~PortPins;
+ 111   3                P2PH  |= PortPins;
+ 112   3              }
+ 113   2      
+ 114   2              if(GPIO_Mode == GPIO_MODE_OUT_PP)
+C51 COMPILER V9.00   SC95F_GPIO                                                            07/01/2021 08:32:27 PAGE 3   
+
+ 115   2              {
+ 116   3                P2CON |= PortPins;
+ 117   3              }
+ 118   2            }
+ 119   1      
+ 120   1      #if defined (SC95F8x1x) || defined (SC95F7x1x) || defined (SC95FWxx)  ||  defined (SC95F8x3x) ||  defined 
+             -(SC95F7x3x)
+                    else
+                      if(GPIOx == GPIO3)
+                      {
+                        if(GPIO_Mode == GPIO_MODE_IN_HI)
+                        {
+                          P3CON &= ~PortPins;
+                          P3PH  &= ~PortPins;
+                        }
+              
+                        if(GPIO_Mode == GPIO_MODE_IN_PU)
+                        {
+                          P3CON &= ~PortPins;
+                          P3PH  |= PortPins;
+                        }
+              
+                        if(GPIO_Mode == GPIO_MODE_OUT_PP)
+                        {
+                          P3CON |= PortPins;
+                        }
+                      }
+                      else
+                        if(GPIOx == GPIO4)
+                        {
+                          if(GPIO_Mode == GPIO_MODE_IN_HI)
+                          {
+                            P4CON &= ~PortPins;
+                            P4PH  &= ~PortPins;
+                          }
+              
+                          if(GPIO_Mode == GPIO_MODE_IN_PU)
+                          {
+                            P4CON &= ~PortPins;
+                            P4PH  |= PortPins;
+                          }
+              
+                          if(GPIO_Mode == GPIO_MODE_OUT_PP)
+                          {
+                            P4CON |= PortPins;
+                          }
+                        }
+              
+              #endif
+ 163   1                else
+ 164   1                {
+ 165   2                  if(GPIOx == GPIO5)
+ 166   2                  {
+ 167   3                    if(GPIO_Mode == GPIO_MODE_IN_HI)
+ 168   3                    {
+ 169   4                      P5CON &= ~PortPins;
+ 170   4                      P5PH  &= ~PortPins;
+ 171   4                    }
+ 172   3      
+ 173   3                    if(GPIO_Mode == GPIO_MODE_IN_PU)
+ 174   3                    {
+ 175   4                      P5CON &= ~PortPins;
+C51 COMPILER V9.00   SC95F_GPIO                                                            07/01/2021 08:32:27 PAGE 4   
+
+ 176   4                      P5PH  |= PortPins;
+ 177   4                    }
+ 178   3      
+ 179   3                    if(GPIO_Mode == GPIO_MODE_OUT_PP)
+ 180   3                    {
+ 181   4                      P5CON |= PortPins;
+ 182   4                    }
+ 183   3                  }
+ 184   2                }
+ 185   1      }
+ 186          
+ 187          /**************************************************
+ 188          *函数名称：void GPIO_Write(GPIO_TypeDef GPIOx, uint8_t PortVal)
+ 189          *函数功能：GPIO口赋值
+ 190          *入口参数：GPIOx        选择操作的GPIO口
+ 191                             PortVal  GPIO口的值
+ 192          *出口参数：void
+ 193          **************************************************/
+ 194          void GPIO_Write(GPIO_TypeDef GPIOx, uint8_t PortVal)
+ 195          {
+ 196   1        if(GPIOx == GPIO0)
+ 197   1        {
+ 198   2          P0 = PortVal;
+ 199   2        }
+ 200   1      
+ 201   1        if(GPIOx == GPIO1)
+ 202   1        {
+ 203   2          P1 = PortVal;
+ 204   2        }
+ 205   1      
+ 206   1        if(GPIOx == GPIO2)
+ 207   1        {
+ 208   2          P2 = PortVal;
+ 209   2        }
+ 210   1      
+ 211   1      #if defined (SC95F8x1x) || defined (SC95F7x1x) || defined (SC95FWxx)  ||  defined (SC95F8x3x) ||  defined 
+             -(SC95F7x3x) 
+              
+                if(GPIOx == GPIO3)
+                {
+                  P3 = PortVal;
+                }
+              
+                if(GPIOx == GPIO4)
+                {
+                  P4 = PortVal;
+                }
+              
+              #endif
+ 224   1      
+ 225   1        if(GPIOx == GPIO5)
+ 226   1        {
+ 227   2          P5 = PortVal;
+ 228   2        }
+ 229   1      }
+ 230          
+ 231          /**************************************************
+ 232          *函数名称：void GPIO_WriteHigh(GPIO_TypeDef GPIOx, GPIO_Pin_TypeDef PortPins)
+ 233          *函数功能：GPIO口管脚Pxy置位
+ 234          *入口参数：GPIOx                选择操作的GPIO口
+ 235                             PortPins             选择GPIO口管脚Pxy
+ 236          *出口参数：void
+C51 COMPILER V9.00   SC95F_GPIO                                                            07/01/2021 08:32:27 PAGE 5   
+
+ 237          **************************************************/
+ 238          void GPIO_WriteHigh(GPIO_TypeDef GPIOx, uint8_t PortPins)
+ 239          {
+ 240   1        if(GPIOx == GPIO0)
+ 241   1        {
+ 242   2          P0 |= PortPins;
+ 243   2        }
+ 244   1      
+ 245   1        if(GPIOx == GPIO1)
+ 246   1        {
+ 247   2          P1 |= PortPins;
+ 248   2        }
+ 249   1      
+ 250   1        if(GPIOx == GPIO2)
+ 251   1        {
+ 252   2          P2 |= PortPins;
+ 253   2        }
+ 254   1      
+ 255   1      #if defined (SC95F8x1x) || defined (SC95F7x1x) || defined (SC95FWxx)  ||  defined (SC95F8x3x) ||  defined 
+             -(SC95F7x3x)
+              
+                if(GPIOx == GPIO3)
+                {
+                  P3 |= PortPins;
+                }
+              
+                if(GPIOx == GPIO4)
+                {
+                  P4 |= PortPins;
+                }
+              
+              #endif
+ 268   1      
+ 269   1        if(GPIOx == GPIO5)
+ 270   1        {
+ 271   2          P5 |= PortPins;
+ 272   2        }
+ 273   1      }
+ 274          
+ 275          /**************************************************
+ 276          *函数名称：void GPIO_WriteLow(GPIO_TypeDef GPIOx, GPIO_Pin_TypeDef PortPins)
+ 277          *函数功能：GPIO口管脚Pxy复位
+ 278          *入口参数：GPIOx                选择操作的GPIO口
+ 279                             PortPins             选择GPIO口管脚Pxy
+ 280          *出口参数：void
+ 281          **************************************************/
+ 282          void GPIO_WriteLow(GPIO_TypeDef GPIOx, uint8_t PortPins)
+ 283          {
+ 284   1        if(GPIOx == GPIO0)
+ 285   1        {
+ 286   2          P0 &= ~PortPins;
+ 287   2        }
+ 288   1      
+ 289   1        if(GPIOx == GPIO1)
+ 290   1        {
+ 291   2          P1 &= ~PortPins;
+ 292   2        }
+ 293   1      
+ 294   1        if(GPIOx == GPIO2)
+ 295   1        {
+ 296   2          P2 &= ~PortPins;
+ 297   2        }
+C51 COMPILER V9.00   SC95F_GPIO                                                            07/01/2021 08:32:27 PAGE 6   
+
+ 298   1      
+ 299   1      #if defined (SC95F8x1x) || defined (SC95F7x1x) || defined (SC95FWxx)  ||  defined (SC95F8x3x) ||  defined 
+             -(SC95F7x3x)
+              
+                if(GPIOx == GPIO3)
+                {
+                  P3 &= ~PortPins;
+                }
+              
+                if(GPIOx == GPIO4)
+                {
+                  P4 &= ~PortPins;
+                }
+              
+              #endif
+ 312   1      
+ 313   1        if(GPIOx == GPIO5)
+ 314   1        {
+ 315   2          P5 &= ~PortPins;
+ 316   2        }
+ 317   1      }
+ 318          
+ 319          /**************************************************
+ 320          *函数名称：uint8_t GPIO_ReadPort(GPIO_TypeDef GPIOx)
+ 321          *函数功能：读GPIO口Px的值
+ 322          *入口参数：GPIOx        选择操作的GPIO口
+ 323          *出口参数：uint8_t      返回Px的值
+ 324          **************************************************/
+ 325          uint8_t GPIO_ReadPort(GPIO_TypeDef GPIOx)
+ 326          {
+ 327   1        if(GPIOx == GPIO0)
+ 328   1        {
+ 329   2          return P0;
+ 330   2        }
+ 331   1        else
+ 332   1          if(GPIOx == GPIO1)
+ 333   1          {
+ 334   2            return P1;
+ 335   2          }
+ 336   1          else
+ 337   1            if(GPIOx == GPIO2)
+ 338   1            {
+ 339   2              return P2;
+ 340   2            }
+ 341   1      
+ 342   1      #if defined (SC95F8x1x) || defined (SC95F7x1x) || defined (SC95FWxx)  ||  defined (SC95F8x3x) ||  defined 
+             -(SC95F7x3x)
+                    else
+                      if(GPIOx == GPIO3)
+                      {
+                        return P3;
+                      }
+                      else
+                        if(GPIOx == GPIO4)
+                        {
+                          return P4;
+                        }
+              
+              #endif
+ 355   1                else
+ 356   1                {
+ 357   2                  return P5;
+C51 COMPILER V9.00   SC95F_GPIO                                                            07/01/2021 08:32:27 PAGE 7   
+
+ 358   2                }
+ 359   1      }
+ 360          
+ 361          /**************************************************
+ 362          *函数名称：BitStatus GPIO_ReadPin(GPIO_TypeDef GPIOx, uint8_t PortPins)
+ 363          *函数功能：读GPIO口管脚Pxy的值
+ 364          *入口参数：GPIOx                选择操作的GPIO口
+ 365                             PortPins             选择GPIO口管脚Pxy
+ 366          *出口参数：BitStatus    返回Pxy的值
+ 367          **************************************************/
+ 368          uint8_t GPIO_ReadPin(GPIO_TypeDef GPIOx, uint8_t PortPins)
+ 369          {
+ 370   1        if(GPIOx == GPIO0)
+ 371   1        {
+ 372   2          return (P0 & PortPins);
+ 373   2        }
+ 374   1        else
+ 375   1          if(GPIOx == GPIO1)
+ 376   1          {
+ 377   2            return (P1 & PortPins);
+ 378   2          }
+ 379   1          else
+ 380   1            if(GPIOx == GPIO2)
+ 381   1            {
+ 382   2              return (P2 & PortPins);
+ 383   2            }
+ 384   1      
+ 385   1      #if defined (SC95F8x1x) || defined (SC95F7x1x) || defined (SC95FWxx)  ||  defined (SC95F8x3x) ||  defined 
+             -(SC95F7x3x)
+                    else
+                      if(GPIOx == GPIO3)
+                      {
+                        return (P3 & PortPins);
+                      }
+                      else
+                        if(GPIOx == GPIO4)
+                        {
+                          return (P4 & PortPins);
+                        }
+              
+              #endif
+ 398   1                else
+ 399   1                  if(GPIOx == GPIO5)
+ 400   1                  {
+ 401   2                    return (P5 & PortPins);
+ 402   2                  }
+ 403   1      
+ 404   1        return 0;
+ 405   1      }
+ 406          
+ 407          /**************************************************
+ 408          *函数名称：void GPIO_IOH_Config(GPIO_TypeDef GPIOx, uint8_t PortPins,GPIO_IOH_Grade_TypeDef GPIO_IOH_Grade
+             -)
+ 409          *函数功能：设置GPIO口管脚IOH输出能力
+ 410          *入口参数：GPIOx                选择操作的GPIO口
+ 411                             PortPins             选择GPIO口管脚Pxy
+ 412          *出口参数：BitStatus    返回Pxy的值
+ 413          **************************************************/
+ 414          void GPIO_IOH_Config(GPIO_TypeDef GPIOx, GPIO_Pin_TypeDef PortPins,GPIO_IOH_Grade_TypeDef GPIO_IOH_Grade)
+ 415          {
+ 416   1            switch(GPIOx)
+ 417   1            {
+C51 COMPILER V9.00   SC95F_GPIO                                                            07/01/2021 08:32:27 PAGE 8   
+
+ 418   2             case GPIO0:
+ 419   2                if(PortPins == GPIO_PIN_LNIB)
+ 420   2                {
+ 421   3                   IOHCON0 &= 0xFC;
+ 422   3                   IOHCON0 |= GPIO_IOH_Grade;
+ 423   3                }
+ 424   2                else if(PortPins == GPIO_PIN_HNIB)
+ 425   2                {
+ 426   3                   IOHCON0 &= 0xF3;
+ 427   3                   IOHCON0 |= GPIO_IOH_Grade << 2;
+ 428   3                }
+ 429   2             break;
+ 430   2             case GPIO1:
+ 431   2                if(PortPins == GPIO_PIN_LNIB)
+ 432   2                {
+ 433   3                   IOHCON0 &= 0xCF;
+ 434   3                   IOHCON0 |= GPIO_IOH_Grade << 4;
+ 435   3                }
+ 436   2                else if(PortPins == GPIO_PIN_HNIB)
+ 437   2                {
+ 438   3                   IOHCON0 &= 0x3F;
+ 439   3                   IOHCON0 |= GPIO_IOH_Grade << 6;
+ 440   3                }
+ 441   2             break;
+ 442   2             case GPIO2:
+ 443   2                if(PortPins == GPIO_PIN_LNIB)
+ 444   2                {
+ 445   3                   IOHCON1 &= 0xFC;
+ 446   3                   IOHCON1 |= GPIO_IOH_Grade;
+ 447   3                }
+ 448   2                else if(PortPins == GPIO_PIN_HNIB)
+ 449   2                {
+ 450   3                   IOHCON1 &= 0xF3;
+ 451   3                   IOHCON1 |= GPIO_IOH_Grade << 2;
+ 452   3                }
+ 453   2             break;
+ 454   2              #if defined (SC95F8x1x) || defined (SC95F7x1x) || defined (SC95FWxx) || defined (SC95F8x3x) || def
+             -ined (SC95F7x3x) 
+                     case GPIO3:
+                        if(PortPins == GPIO_PIN_LNIB)
+                        {
+                           IOHCON1 &= 0xCF;
+                           IOHCON1 |= GPIO_IOH_Grade << 4;
+                        }
+                     break;
+                     #elif defined (SC95F8x2x) || defined (SC95F7x2x)
+ 463   2             case GPIO5:
+ 464   2                if(PortPins == GPIO_PIN_LNIB)
+ 465   2                {
+ 466   3                   IOHCON1 &= 0xCF;
+ 467   3                   IOHCON1 |= GPIO_IOH_Grade << 4;
+ 468   3                }
+ 469   2             break;   
+ 470   2             #endif
+ 471   2             default :
+ 472   2             break;
+ 473   2          }
+ 474   1      }
+ 475          
+ 476          
+ 477          /******************* (C) COPYRIGHT 2020 SinOne Microelectronics *****END OF FILE****/
+
+C51 COMPILER V9.00   SC95F_GPIO                                                            07/01/2021 08:32:27 PAGE 9   
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    421    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

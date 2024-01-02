@@ -1,0 +1,76 @@
+C51 COMPILER V9.01   SC95F_WDT                                                             09/07/2020 16:59:35 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE SC95F_WDT
+OBJECT MODULE PLACED IN ..\Output\sc95f_wdt.obj
+COMPILER INVOKED BY: E:\Keil\C51\BIN\C51.EXE ..\FWLib\SC95F_Lib\src\sc95f_wdt.c OMF2 BROWSE INCDIR(..\FWLib\SC95F_Lib\in
+                    -c;..\User) DEFINE(SC95F8x2x) DEBUG PRINT(..\List\sc95f_wdt.lst) OBJECT(..\Output\sc95f_wdt.obj)
+
+line level    source
+
+   1          //************************************************************
+   2          //  Copyright (c) 深圳市赛元微电子有限公司
+   3          //      文件名称        : sc95f_wdt.c
+   4          //      作者            : 
+   5          //      模块功能        : WDT固件库函数C文件
+   6          //      局部函数列表:
+   7          //  最后更正日期: 2020/8/13
+   8          //      版本            : V1.0 
+   9          //  说明        ：该文件仅适用于SC95Fxx1x、SC95Fxx2x系列芯片  
+  10          //*************************************************************
+  11          
+  12          #include "sc95f_wdt.h"
+  13          
+  14          /**************************************************
+  15          *函数名称：void WDT_DeInit(void)
+  16          *函数功能：WDT相关寄存器复位至缺省值
+  17          *入口参数：void
+  18          *出口参数：void
+  19          **************************************************/
+  20          void WDT_DeInit(void)
+  21          {
+  22   1              WDTCON = 0X00;  
+  23   1      }
+  24          
+  25          /**************************************************
+  26          *函数名称：void WDT_Init(WDT_OverflowTime_TypeDef OverflowTime)
+  27          *函数功能：WDT初始化配置函数
+  28          *入口参数：OverflowTime WDT溢出时间选择
+  29          *出口参数：void
+  30          **************************************************/
+  31          void WDT_Init(WDT_OverflowTime_TypeDef OverflowTime)
+  32          {       
+  33   1              WDTCON = (WDTCON & 0XF8) | OverflowTime;        
+  34   1      }
+  35          
+  36          /*****************************************************
+  37          *函数名称：void WDT_SetReload(void)
+  38          *函数功能：WDT喂狗
+  39          *入口参数：void
+  40          *出口参数：void
+  41          *****************************************************/
+  42          void WDT_SetReload(void)
+  43          {
+  44   1              WDTCON |= 0X10; 
+  45   1      }
+  46          /******************* (C) COPYRIGHT 2020 SinOne Microelectronics *****END OF FILE****/
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     16    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+C51 COMPILER V9.01   SC95F_WDT                                                             09/07/2020 16:59:35 PAGE 2   
+
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

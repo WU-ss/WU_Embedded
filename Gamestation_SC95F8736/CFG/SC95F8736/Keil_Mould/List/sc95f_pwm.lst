@@ -1,0 +1,671 @@
+C51 COMPILER V9.01   SC95F_PWM                                                             09/07/2020 16:59:33 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE SC95F_PWM
+OBJECT MODULE PLACED IN ..\Output\sc95f_pwm.obj
+COMPILER INVOKED BY: E:\Keil\C51\BIN\C51.EXE ..\FWLib\SC95F_Lib\src\sc95f_pwm.c OMF2 BROWSE INCDIR(..\FWLib\SC95F_Lib\in
+                    -c;..\User) DEFINE(SC95F8x2x) DEBUG PRINT(..\List\sc95f_pwm.lst) OBJECT(..\Output\sc95f_pwm.obj)
+
+line level    source
+
+   1          //************************************************************
+   2          //  Copyright (c) 深圳市赛元微电子有限公司
+   3          //      文件名称        : sc95f_pwm.c
+   4          //      作者            : 
+   5          //      模块功能        : PWM固件库函数C文件
+   6          //      局部函数列表:
+   7          //  最后更正日期: 2020/8/13
+   8          //      版本            : V1.0 
+   9          //  说明        ：该文件仅适用于SC95Fxx1x、SC95Fxx2x系列芯片  
+  10          //*************************************************************
+  11          
+  12          #include "sc95f_pwm.h"
+  13          
+  14          #if defined (SC95F8x1x) || defined (SC95F7x1x)
+              uint16_t xdata PWMREG[8] _at_ 0x1040;   //PWM占空比调节寄存器
+              uint16_t pwm_tmpreg[8] = {0,0,0,0,0,0,0,0};             //PWM占空比调节寄存器缓存数组
+              
+              /**************************************************
+              *函数名称：void PWM_DeInit(void)
+              *函数功能：PWM相关寄存器复位至缺省值
+              *入口参数：void
+              *出口参数：void
+              **************************************************/
+              void PWM_DeInit(void)
+              {
+                      static uint8_t i;
+                      PWMMOD  = 0X00;
+                      PWMCFG = 0;
+                      PWMCON = 0;             
+                      PWMFLT = 0X00;
+                      PWMDFR = 0X00;
+                      IE1 &= 0XFD;
+                      IP1 &= 0XFD;
+                      for(i=0;i<8;i++)
+                      {
+                              PWMREG[i]=0;
+                      }               
+              }
+              
+              /**************************************************
+              *函数名称：void PWM_Init(PWM_PresSel_TypeDef PWM_PresSel, uint16_t PWM_Period)
+              *函数功能：PWM初始化配置函数
+              *入口参数：PWM_PresSel  预分频选择
+                                 PWM_Period   PWM周期配置
+              *出口参数：void
+              **************************************************/
+              void PWM_Init(PWM_PresSel_TypeDef PWM_PresSel, uint16_t PWM_Period)
+              {
+                      PWM_Period -= 1;
+                      PWMCFG = (PWMCFG & 0XCF) | PWM_PresSel;                                 //预分频
+                      PWMCFG = (PWMCFG & 0XF0) | (uint8_t)(PWM_Period / 256); //周期高4位
+                      PWMCON = (uint8_t)(PWM_Period & 0X00FF);                                //周期低8位
+              }
+              
+C51 COMPILER V9.01   SC95F_PWM                                                             09/07/2020 16:59:33 PAGE 2   
+
+              /**************************************************
+              *函数名称：void PWM_OutputStateConfig(uint8_t PWM_OutputPin, PWM_OutputState_TypeDef PWM_OutputState)
+              *函数功能：PWMx输出使能/失能配置函数
+              *入口参数：PWM_OutputPin        PWMx选择
+                                 PWM_OutputState      PWM输出状态配置
+              *出口参数：void
+              **************************************************/
+              void PWM_OutputStateConfig(uint8_t PWM_OutputPin, PWM_OutputState_TypeDef PWM_OutputState)
+              {
+                      uint8_t i; 
+                      for(i=0;i<8;i++)
+                      {
+                              if(PWM_OutputPin&(0x01<<i))
+                              {
+                                      if(PWM_OutputState == PWM_OUTPUTSTATE_DISABLE)
+                                      {
+                                              pwm_tmpreg[i] &= 0X7FFF;        
+                                      }
+                                      else
+                                      {
+                                              pwm_tmpreg[i] |= 0X8000;
+                                      } 
+                                      PWMREG[i] = pwm_tmpreg[i];
+                              }
+                      }
+              }
+              
+              /**************************************************
+              *函数名称：void PWM_PolarityConfig(uint8_t PWM_OutputPin, PWM_Polarity_TypeDef PWM_Polarity)
+              *函数功能：PWMx正/反向输出配置函数
+              *入口参数：PWM_OutputPin        PWMx选择
+                                 PWM_Polarity         PWM输出正/反向配置
+              *出口参数：void
+              **************************************************/
+              void PWM_PolarityConfig(uint8_t PWM_OutputPin, PWM_Polarity_TypeDef PWM_Polarity)
+              {
+                      uint8_t i; 
+                      for(i=0;i<8;i++)
+                      {
+                              if(PWM_OutputPin&(0x01<<i))
+                              {
+                                      if(PWM_Polarity == PWM_POLARITY_NON_INVERT)
+                                      {
+                                              pwm_tmpreg[i] &= 0XBFFF;        
+                                      }
+                                      else
+                                      {
+                                              pwm_tmpreg[i] |= 0X4000;
+                                      }
+                                      PWMREG[i] = pwm_tmpreg[i];
+                              }
+                      }       
+              }
+              
+              /**************************************************
+              *函数名称：void PWM_IndependentModeConfig(PWM_OutputPin_TypeDef PWM_OutputPin, uint16_t PWM_DutyCycle)
+              *函数功能：PWMx独立工作模式配置函数
+              *入口参数：PWM_OutputPin        PWMx独立通道选择
+                                 PWM_DutyCycle        PWM占空比配置
+              *出口参数：void
+              **************************************************/
+              void PWM_IndependentModeConfig(PWM_OutputPin_TypeDef PWM_OutputPin, uint16_t PWM_DutyCycle)
+C51 COMPILER V9.01   SC95F_PWM                                                             09/07/2020 16:59:33 PAGE 3   
+
+              {
+                      uint8_t i; 
+                      for(i=0;i<8;i++)
+                      {
+                         if(PWM_OutputPin&(0x01<<i))
+                         {
+                                  pwm_tmpreg[i] = pwm_tmpreg[i] & 0XF000 | PWM_DutyCycle;
+                                      PWMREG[i] = pwm_tmpreg[i]; 
+                         }
+                      }
+              }
+              /**************************************************
+              *函数名称：void PWM_ComplementaryModeConfig(PWM_ComplementaryOutputPin_TypeDef PWM_ComplementaryOutputPin,
+             - uint16_t PWM_DutyCycle)
+              *函数功能：PWMxPWMy互补工作模式配置函数
+              *入口参数：PWM_ComplementaryOutputPin   PWMxPWMy互补通道选择
+                                 PWM_DutyCycle                                PWM占空比配置
+              *出口参数：void
+              **************************************************/
+              void PWM_ComplementaryModeConfig(PWM_ComplementaryOutputPin_TypeDef PWM_ComplementaryOutputPin, uint16_t P
+             -WM_DutyCycle)
+              {
+                      PWMMOD = 0X08;
+                      switch(PWM_ComplementaryOutputPin)      //设置占空比
+                      {
+                              case PWM40PWM41:
+                                      PWMREG[PWM40PWM41] = ( PWMREG[PWM40PWM41] & 0XC000 ) | PWM_DutyCycle;
+                                      break;
+                              case PWM42PWM43:
+                                      PWMREG[PWM42PWM43] = ( PWMREG[PWM42PWM43] & 0XC000 ) | PWM_DutyCycle;
+                                      break;
+                              case PWM50PWM51:
+                                      PWMREG[PWM50PWM51] = ( PWMREG[PWM50PWM51] & 0XC000 ) | PWM_DutyCycle;
+                                      break;
+                              case PWM52PWM53:
+                                      PWMREG[PWM52PWM53] = ( PWMREG[PWM52PWM53] & 0XC000 ) | PWM_DutyCycle;
+                                      break;
+                              default:
+                                      break;
+                      }               
+              }
+              
+              /**************************************************
+              *函数名称：void PWM_DeadTimeConfig(uint8_t PWM_RisingDeadTime, uint8_t PWM_FallingDeadTime)
+              *函数功能：PWM互补工作模式下死区时间配置函数
+              *入口参数：PWM_RisingDeadTime   PWM死区上升时间  00-FF
+                                 PWM_FallingDeadTime  PWM死区下降时间  00-FF
+              *出口参数：void
+              **************************************************/
+              void PWM_DeadTimeConfig(uint8_t PWM_RisingDeadTime, uint8_t PWM_FallingDeadTime)
+              {
+                      PWMDFR = (PWM_RisingDeadTime | (PWM_FallingDeadTime << 4));                     
+              }
+              
+              /*****************************************************
+              *函数名称：void PWM_Cmd(FunctionalState NewState)
+              *函数功能：PWM功能开关函数
+              *入口参数：FunctionalState NewState     功能启动/关闭选择
+              *出口参数：void
+              *****************************************************/
+              void PWM_Cmd(FunctionalState NewState)
+              {
+C51 COMPILER V9.01   SC95F_PWM                                                             09/07/2020 16:59:33 PAGE 4   
+
+                  if (NewState != DISABLE)
+                  {
+                      PWMCFG |= 0X80;
+                  }
+                  else
+                  {
+                      PWMCFG &= 0X7F;
+                  }
+              }
+              
+              /*****************************************************
+              *函数名称：void PWM_ITConfig(FunctionalState NewState, PriorityStatus Priority)
+              *函数功能：PWM中断初始化
+              *入口参数：FunctionalState NewState     中断使能/关闭选择
+                                 PriorityStatus Priority      中断优先级选择
+              *出口参数：void
+              *****************************************************/
+              void PWM_ITConfig(FunctionalState NewState, PriorityStatus Priority)
+              {
+                  if (NewState != DISABLE)
+                  {
+                              IE1 |= 0X02;            
+                  }
+                  else
+                  {
+                              IE1 &= 0XFD;   
+                  }
+              
+                      if(Priority == LOW)
+                      {
+                              IP1 &= ~0X02;   
+                      }
+                      else
+                      {
+                              IP1 |= 0X02;    
+                      }
+              }
+              
+              /*****************************************************
+              *函数名称：FlagStatus PWM_GetFlagStatus(void)
+              *函数功能：获得PWM中断标志状态
+              *入口参数：void
+              *出口参数：FlagStatus   PWM中断标志状态 
+              *****************************************************/
+              FlagStatus PWM_GetFlagStatus(void)
+              {
+                      return (FlagStatus)(PWMCFG & 0X40);
+              }
+              
+              /*****************************************************
+              *函数名称：void PWM_ClearFlag(void)
+              *函数功能：清除PWM中断标志状态
+              *入口参数：void
+              *出口参数：void 
+              *****************************************************/
+              void PWM_ClearFlag(void)
+              {
+                      PWMCFG &= 0XBF;
+              }
+              
+              /*****************************************************
+              *函数名称：FlagStatus PWM_GetFaultDetectionFlagStatus(void)
+C51 COMPILER V9.01   SC95F_PWM                                                             09/07/2020 16:59:33 PAGE 5   
+
+              *函数功能：获得PWM故障检测标志位状态
+              *入口参数：void
+              *出口参数：FlagStatus   PWM故障检测标志位状态   
+              *****************************************************/
+              FlagStatus PWM_GetFaultDetectionFlagStatus(void)
+              {
+                      return (FlagStatus)(PWMFLT & 0X40);
+              }
+              
+              /*****************************************************
+              *函数名称：void PWM_ClearFaultDetectionFlag(void)
+              *函数功能：清除PWM故障检测标志位状态   // ！注意,处于锁存模式下，此位可软件清除
+              *入口参数：void
+              *出口参数：void 
+              *****************************************************/
+              void PWM_ClearFaultDetectionFlag(void)
+              {
+                      PWMFLT &= 0XBF;
+              }
+              
+              /*****************************************************
+              *函数名称：void PWM_FaultDetectionFunctionConfig(FunctionalState NewState)
+              *函数功能：PWM故障检测功能开启/关闭
+              *入口参数：FunctionalState NewState     故障检测功能开启/关闭
+              *出口参数：void
+              *****************************************************/
+              void PWM_FaultDetectionConfig(FunctionalState NewState)
+              {
+                  if (NewState != DISABLE)
+                  {
+                              PWMFLT |= 0X80;         
+                  }
+                  else
+                  {
+                              PWMFLT &= 0X7F;   
+                  }
+              }
+              
+              /*****************************************************
+              *函数名称：void PWM_FaultDetectionModeConfig(PWM_FaultDetectionMode_TypeDef FaultDetectionMode, PWM_FaultD
+             -etectionVoltageSelect_TypeDef FaultDetectionVoltageSelect, PWM_FaultDetectionWaveFilteringTime_TypeDef FaultDetectionWav
+             -eFilteringTime)
+              *函数功能：PWM故障检测模式设置
+              *入口参数：FaultDetectionMode   故障检测功能模式设置： 立即模式/锁存模式
+                                 FaultDetectionVoltageSelect  故障检测电平选择
+                                 FaultDetectionWaveFilteringTime      故障检测输入信号滤波时间选择
+              *出口参数：void
+              *****************************************************/
+              void PWM_FaultDetectionModeConfig(PWM_FaultDetectionMode_TypeDef FaultDetectionMode, PWM_FaultDetectionVol
+             -tageSelect_TypeDef FaultDetectionVoltageSelect, PWM_FaultDetectionWaveFilteringTime_TypeDef FaultDetectionWaveFilteringT
+             -ime)
+              {
+                      PWMFLT = (PWMFLT & 0XC0) | FaultDetectionMode | FaultDetectionVoltageSelect | FaultDetectionWaveFiltering
+             -Time;                
+                
+              }
+              
+              /*****************************************************
+              *函数名称：void PWM_Aligned_Mode_Select(void)
+              *函数功能：选择PWM的对齐模式
+              *入口参数：PWM_Aligned_Mode 选择对齐模式
+              *出口参数：void 
+C51 COMPILER V9.01   SC95F_PWM                                                             09/07/2020 16:59:33 PAGE 6   
+
+              *****************************************************/
+              void PWM_Aligned_Mode_Select(PWM_Aligned_Mode_TypeDef PWM_Aligned_Mode)
+              {
+                      if(PWM_Aligned_Mode == PWM_Edge_Aligned_Mode)
+                      {
+                         PWMMOD&=0XFB;
+                      }
+                      else if(PWM_Aligned_Mode == PWM_Center_Alignment_Mode)
+                      {
+                         PWMMOD|=0X04;
+                      }
+              }
+              #endif
+ 309          
+ 310          #if defined (SC95F8x2x) || defined (SC95F7x2x)
+ 311          unsigned int xdata PDT[8] _at_ 0x1040;
+ 312          
+ 313          /**************************************************
+ 314          *函数名称：void PWM_DeInit(void)
+ 315          *函数功能：PWM相关寄存器复位至缺省值
+ 316          *入口参数：void
+ 317          *出口参数：void
+ 318          **************************************************/
+ 319          void PWM_DeInit(void)
+ 320          {
+ 321   1              PWMCFG = 0X00;
+ 322   1              PWMCON0 = 0X00;
+ 323   1              PWMCON1 = 0X00;
+ 324   1              PWMPDL = 0X00;
+ 325   1              PWMPDH = 0X00;
+ 326   1              PWMFLT = 0X00;
+ 327   1              PWMDFR = 0X00;
+ 328   1      
+ 329   1              IE1 &= ~0X02;
+ 330   1              IP1 &= ~0X02;   
+ 331   1      }
+ 332          
+ 333          /**************************************************
+ 334          *函数名称：void PWM_Init(PWM_PresSel_TypeDef PWM_PresSel, uint16_t PWM_Period)
+ 335          *函数功能：PWM初始化配置函数
+ 336          *入口参数：PWM_PresSel  预分频选择
+ 337                             PWM_Period   PWM周期配置
+ 338          *出口参数：void
+ 339          **************************************************/
+ 340          void PWM_Init(PWM_PresSel_TypeDef PWM_PresSel, uint16_t PWM_Period)
+ 341          {
+ 342   1              PWM_Period -= 1;
+ 343   1              PWMCON0 &= 0XCF;
+ 344   1              PWMCON0 |= PWM_PresSel;  //预分频
+ 345   1              PWMPDL = PWM_Period;     //周期低八位
+ 346   1              PWMPDH = PWM_Period/256; //周期高八位
+ 347   1      }
+ 348          
+ 349          /**************************************************
+ 350          *函数名称：void PWM_OutputStateConfig(uint8_t PWM_OutputPin, PWM_OutputState_TypeDef PWM_OutputState)
+ 351          *函数功能：PWMx输出使能/失能配置函数
+ 352          *入口参数：PWM_OutputPin        PWMx选择
+ 353                             PWM_OutputState      PWM输出状态配置
+ 354          *出口参数：void
+ 355          **************************************************/
+ 356          void PWM_OutputStateConfig(uint8_t PWM_OutputPin, PWM_OutputState_TypeDef PWM_OutputState)
+ 357          {
+C51 COMPILER V9.01   SC95F_PWM                                                             09/07/2020 16:59:33 PAGE 7   
+
+ 358   1              if(PWM_OutputState == PWM_OUTPUTSTATE_ENABLE)
+ 359   1              {
+ 360   2                      PWMCON1 |= PWM_OutputPin;
+ 361   2              }
+ 362   1              else
+ 363   1              {
+ 364   2                      PWMCON1 &= (~PWM_OutputPin);
+ 365   2              }
+ 366   1      
+ 367   1      }
+ 368          
+ 369          /**************************************************
+ 370          *函数名称：void PWM_PolarityConfig(uint8_t PWM_OutputPin, PWM_Polarity_TypeDef PWM_Polarity)
+ 371          *函数功能：PWMx正/反向输出配置函数
+ 372          *入口参数：PWM_OutputPin        PWMx选择
+ 373                             PWM_Polarity         PWM输出正/反向配置
+ 374          *出口参数：void
+ 375          **************************************************/
+ 376          void PWM_PolarityConfig(uint8_t PWM_OutputPin, PWM_Polarity_TypeDef PWM_Polarity)
+ 377          {
+ 378   1              if(PWM_Polarity == PWM_POLARITY_INVERT) 
+ 379   1              {
+ 380   2                      PWMCFG |= PWM_OutputPin;
+ 381   2              }
+ 382   1              else
+ 383   1              {
+ 384   2                      PWMCFG &= (~PWM_OutputPin);
+ 385   2              }
+ 386   1      }
+ 387          
+ 388          /**************************************************
+ 389          *函数名称：void PWM_IndependentModeConfig(PWM_OutputPin_TypeDef PWM_OutputPin, uint16_t PWM_DutyCycle)
+ 390          *函数功能：PWMx独立工作模式配置函数
+ 391          *入口参数：PWM_OutputPin        PWMx独立通道选择
+ 392                             PWM_DutyCycle        PWM占空比配置
+ 393          *出口参数：void
+ 394          **************************************************/
+ 395          void PWM_IndependentModeConfig(PWM_OutputPin_TypeDef PWM_OutputPin, uint16_t PWM_DutyCycle)
+ 396          {
+ 397   1              PWMCON0 &= 0XFD;                //设置PWM为独立模式     
+ 398   1              switch(PWM_OutputPin)   //设置占空比
+ 399   1              {
+ 400   2                      case PWM0:
+ 401   2                              PDT[0] = PWM_DutyCycle;
+ 402   2                              break;
+ 403   2                      case PWM1:
+ 404   2                              PDT[1] = PWM_DutyCycle;
+ 405   2                              break;
+ 406   2                      case PWM2:
+ 407   2                              PDT[2] = PWM_DutyCycle;
+ 408   2                              break;
+ 409   2                      case PWM3:
+ 410   2                              PDT[3] = PWM_DutyCycle;
+ 411   2                              break;
+ 412   2                      case PWM4:
+ 413   2                              PDT[4] = PWM_DutyCycle;
+ 414   2                              break;
+ 415   2                      case PWM5:
+ 416   2                              PDT[5] = PWM_DutyCycle;
+ 417   2                              break;
+ 418   2                      case PWM6:
+ 419   2                              PDT[6] = PWM_DutyCycle;
+C51 COMPILER V9.01   SC95F_PWM                                                             09/07/2020 16:59:33 PAGE 8   
+
+ 420   2                              break;
+ 421   2                      case PWM7:
+ 422   2                              PDT[7] = PWM_DutyCycle;
+ 423   2                              break;
+ 424   2                      default:
+ 425   2                              break;
+ 426   2              }
+ 427   1      }
+ 428          
+ 429          /**************************************************
+ 430          *函数名称：void PWM_ComplementaryModeConfig(PWM_ComplementaryOutputPin_TypeDef PWM_ComplementaryOutputPin,
+             - uint16_t PWM_DutyCycle)
+ 431          *函数功能：PWMxPWMy互补工作模式配置函数
+ 432          *入口参数：PWM_ComplementaryOutputPin   PWMxPWMy互补通道选择
+ 433                             PWM_DutyCycle                                PWM占空比配置
+ 434          *出口参数：void
+ 435          **************************************************/
+ 436          void PWM_ComplementaryModeConfig(PWM_ComplementaryOutputPin_TypeDef PWM_ComplementaryOutputPin, uint16_t P
+             -WM_DutyCycle)
+ 437          {
+ 438   1              PWMCON0 |= 0X02;                                        //设置PWM为互补模式
+ 439   1              switch(PWM_ComplementaryOutputPin)      //设置占空比
+ 440   1              {
+ 441   2                      case PWM0PWM1:
+ 442   2                              PDT[0] = PWM_DutyCycle;
+ 443   2                              break;
+ 444   2                      case PWM2PWM3:
+ 445   2                              PDT[2] = PWM_DutyCycle;
+ 446   2                              break;
+ 447   2                      case PWM4PWM5:
+ 448   2                              PDT[4] = PWM_DutyCycle;
+ 449   2                              break;
+ 450   2                      case PWM6PWM7:
+ 451   2                              PDT[6] = PWM_DutyCycle;
+ 452   2                              break;
+ 453   2                      default:
+ 454   2                              break;
+ 455   2              }                               
+ 456   1      }
+ 457          
+ 458          /**************************************************
+ 459          *函数名称：void PWM_DeadTimeConfig(uint8_t PWM_RisingDeadTime, uint8_t PWM_fallingDeadTime)
+ 460          *函数功能：PWM互补工作模式下死区时间配置函数
+ 461          *入口参数：PWM_RisingDeadTime   PWM死区上升时间
+ 462                             PWM_fallingDeadTime  PWM死区下降时间
+ 463          *出口参数：void
+ 464          **************************************************/
+ 465          void PWM_DeadTimeConfig(uint8_t PWM_RisingDeadTime, uint8_t PWM_fallingDeadTime)
+ 466          {
+ 467   1              PWMDFR = (PWM_RisingDeadTime | (PWM_fallingDeadTime << 4));                             
+ 468   1      }
+ 469          
+ 470          /*****************************************************
+ 471          *函数名称：void PWM_Cmd(FunctionalState NewState)
+ 472          *函数功能：PWM功能开关函数
+ 473          *入口参数：FunctionalState NewState     功能启动/关闭选择
+ 474          *出口参数：void
+ 475          *****************************************************/
+ 476          void PWM_Cmd(FunctionalState NewState)
+ 477          {
+ 478   1          if (NewState != DISABLE)
+ 479   1          {
+C51 COMPILER V9.01   SC95F_PWM                                                             09/07/2020 16:59:33 PAGE 9   
+
+ 480   2              PWMCON0 |= 0X80;
+ 481   2          }
+ 482   1          else
+ 483   1          {
+ 484   2              PWMCON0 &= ~0X80;
+ 485   2          }
+ 486   1      }
+ 487          
+ 488          /*****************************************************
+ 489          *函数名称：void PWM_ITConfig(FunctionalState NewState, PriorityStatus Priority)
+ 490          *函数功能：PWM中断初始化
+ 491          *入口参数：FunctionalState NewState     中断使能/关闭选择
+ 492                             PriorityStatus Priority      中断优先级选择
+ 493          *出口参数：void
+ 494          *****************************************************/
+ 495          void PWM_ITConfig(FunctionalState NewState, PriorityStatus Priority)
+ 496          {
+ 497   1          if (NewState != DISABLE)
+ 498   1          {
+ 499   2                      IE1 |= 0X02;            
+ 500   2          }
+ 501   1          else
+ 502   1          {
+ 503   2                      IE1 &= 0XFD;   
+ 504   2          }
+ 505   1      
+ 506   1              if(Priority == LOW)
+ 507   1              {
+ 508   2                      IP1 &= 0XFD;    
+ 509   2              }
+ 510   1              else
+ 511   1              {
+ 512   2                      IP1 |= 0X02;    
+ 513   2              }
+ 514   1      }
+ 515          
+ 516          /*****************************************************
+ 517          *函数名称：FlagStatus PWM_GetFlagStatus(void)
+ 518          *函数功能：获得PWM中断标志状态
+ 519          *入口参数：void
+ 520          *出口参数：FlagStatus   PWM中断标志状态 
+ 521          *****************************************************/
+ 522          FlagStatus PWM_GetFlagStatus(void)
+ 523          {
+ 524   1              return (FlagStatus)(PWMCON0 & 0X40);
+ 525   1      }
+ 526          
+ 527          /*****************************************************
+ 528          *函数名称：void PWM_ClearFlag(void)
+ 529          *函数功能：清除PWM中断标志状态
+ 530          *入口参数：void
+ 531          *出口参数：void 
+ 532          *****************************************************/
+ 533          void PWM_ClearFlag(void)
+ 534          {
+ 535   1              PWMCON0 &= 0XBF;
+ 536   1      }
+ 537          /*****************************************************
+ 538          *函数名称：void PWM_Aligned_Mode_Select(void)
+ 539          *函数功能：选择PWM的对齐模式
+ 540          *入口参数：PWM_Aligned_Mode 选择对齐模式
+ 541          *出口参数：void 
+C51 COMPILER V9.01   SC95F_PWM                                                             09/07/2020 16:59:33 PAGE 10  
+
+ 542          *****************************************************/
+ 543          void PWM_Aligned_Mode_Select(PWM_Aligned_Mode_TypeDef PWM_Aligned_Mode)
+ 544          {
+ 545   1              if(PWM_Aligned_Mode == PWM_Edge_Aligned_Mode)
+ 546   1              {
+ 547   2                 PWMCON0&=0XFE;
+ 548   2              }
+ 549   1              else if(PWM_Aligned_Mode == PWM_Center_Alignment_Mode)
+ 550   1              {
+ 551   2                 PWMCON0|=0X01;
+ 552   2              }
+ 553   1      }
+ 554          
+ 555          /*****************************************************
+ 556          *函数名称：FlagStatus PWM_GetFaultDetectionFlagStatus(void)
+ 557          *函数功能：获得PWM故障检测标志位状态
+ 558          *入口参数：void
+ 559          *出口参数：FlagStatus   PWM故障检测标志位状态   
+ 560          *****************************************************/
+ 561          FlagStatus PWM_GetFaultDetectionFlagStatus(void)
+ 562          {
+ 563   1              return (FlagStatus)(PWMFLT & 0X40);
+ 564   1      }
+ 565          
+ 566          /*****************************************************
+ 567          *函数名称：void PWM_ClearFaultDetectionFlag(void)
+ 568          *函数功能：清除PWM故障检测标志位状态   // ！注意,处于锁存模式下，此位可软件清除
+ 569          *入口参数：void
+ 570          *出口参数：void 
+ 571          *****************************************************/
+ 572          void PWM_ClearFaultDetectionFlag(void)
+ 573          {
+ 574   1              PWMFLT &= 0XBF;
+ 575   1      }
+ 576          
+ 577          /*****************************************************
+ 578          *函数名称：void PWM_FaultDetectionFunctionConfig(FunctionalState NewState)
+ 579          *函数功能：PWM故障检测功能开启/关闭
+ 580          *入口参数：FunctionalState NewState     故障检测功能开启/关闭
+ 581          *出口参数：void
+ 582          *****************************************************/
+ 583          void PWM_FaultDetectionConfig(FunctionalState NewState)
+ 584          {
+ 585   1          if (NewState != DISABLE)
+ 586   1          {
+ 587   2                      PWMFLT |= 0X80;         
+ 588   2          }
+ 589   1          else
+ 590   1          {
+ 591   2                      PWMFLT &= 0X7F;   
+ 592   2          }
+ 593   1      }
+ 594          
+ 595          /*****************************************************
+ 596          *函数名称：void PWM_FaultDetectionModeConfig(PWM_FaultDetectionMode_TypeDef FaultDetectionMode, PWM_FaultD
+             -etectionVoltageSelect_TypeDef FaultDetectionVoltageSelect, PWM_FaultDetectionWaveFilteringTime_TypeDef FaultDetectionWav
+             -eFilteringTime)
+ 597          *函数功能：PWM故障检测模式设置
+ 598          *入口参数：FaultDetectionMode   故障检测功能模式设置： 立即模式/锁存模式
+ 599                             FaultDetectionVoltageSelect  故障检测电平选择
+ 600                             FaultDetectionWaveFilteringTime      故障检测输入信号滤波时间选择
+ 601          *出口参数：void
+C51 COMPILER V9.01   SC95F_PWM                                                             09/07/2020 16:59:33 PAGE 11  
+
+ 602          *****************************************************/
+ 603          void PWM_FaultDetectionModeConfig(PWM_FaultDetectionMode_TypeDef FaultDetectionMode, PWM_FaultDetectionVol
+             -tageSelect_TypeDef FaultDetectionVoltageSelect, PWM_FaultDetectionWaveFilteringTime_TypeDef FaultDetectionWaveFilteringT
+             -ime)
+ 604          {
+ 605   1              PWMFLT = (PWMFLT & 0XC0) | FaultDetectionMode | FaultDetectionVoltageSelect | FaultDetectionWaveFiltering
+             -Time;                
+ 606   1        
+ 607   1      }
+ 608          #endif
+ 609          /******************* (C) COPYRIGHT 2020 SinOne Microelectronics *****END OF FILE****/
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    277    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

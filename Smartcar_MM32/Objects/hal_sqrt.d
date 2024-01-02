@@ -1,0 +1,10 @@
+.\objects\hal_sqrt.o: MN32_HAL\hal_sqrt.c
+.\objects\hal_sqrt.o: MN32_HAL\hal_sqrt.h
+.\objects\hal_sqrt.o: .\Include\types.h
+.\objects\hal_sqrt.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\hal_sqrt.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdbool.h
+.\objects\hal_sqrt.o: .\Include\reg_common.h
+.\objects\hal_sqrt.o: .\Include\core_cm0.h
+.\objects\hal_sqrt.o: .\Include\cmsis_compiler.h
+.\objects\hal_sqrt.o: .\Include\cmsis_armcc.h
+.\objects\hal_sqrt.o: .\Include\reg_root.h

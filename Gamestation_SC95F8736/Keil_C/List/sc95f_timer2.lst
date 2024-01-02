@@ -1,0 +1,309 @@
+C51 COMPILER V9.54   SC95F_TIMER2                                                          04/19/2023 15:54:52 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE SC95F_TIMER2
+OBJECT MODULE PLACED IN ..\Output\sc95f_timer2.obj
+COMPILER INVOKED BY: D:\Keil5\C51\BIN\C51.EXE ..\FWLib\SC95F_Lib\src\sc95f_timer2.c LARGE OBJECTADVANCED OPTIMIZE(8,SIZE
+                    -) BROWSE INCDIR(..\FWLib\SC95F_Lib\inc;..\User;..\Bank1;..\Bank2;..\Bank3) DEFINE(SC95F8x3x) DEBUG PRINT(..\List\sc95f_t
+                    -imer2.lst) OBJECT(..\Output\sc95f_timer2.obj)
+
+line level    source
+
+   1          //************************************************************
+   2          //  Copyright (c) 
+   3          //      文件名称:                       sc95f_timer2.c
+   4          //      作者:                                   赛元应用团队
+   5          //      模块功能:                       TIMER2固件库函数C文件
+   6          //  最后更正日期:       2022年7月20日
+   7          //      版本:                           V1.10000
+   8          //  说明: 
+   9          //*************************************************************
+  10          
+  11          #include "sc95f_timer2.h"
+  12          
+  13          /**************************************************
+  14          *函数名称:void TIM2_DeInit(void)
+  15          *函数功能:TIMER2相关寄存器复位至初始值
+  16          *入口参数:void
+  17          *出口参数:void
+  18          **************************************************/
+  19          void TIM2_DeInit()
+  20          {
+  21   1        TXINX = 0x02; //TIMER2选择
+  22   1        TXCON = 0X00;
+  23   1        TXMOD = 0X00;
+  24   1        RCAPXH = 0X00;
+  25   1        RCAPXL = 0X00;
+  26   1        THX = 0X00;
+  27   1        TLX = 0X00;
+  28   1        IE1 &= 0X3F;
+  29   1        IP1 &= 0X3F;
+  30   1        ET2 = 0;
+  31   1        IPT2 = 0;
+  32   1      }
+  33          
+  34          /**************************************************
+  35          *函数名称:void TIM2_PrescalerSelection(TIM2_PresSel_TypeDef TIM2_PrescalerSelection)
+  36          *函数功能:TIMER2 预分频选择
+  37          *入口参数:
+  38          TIM2_PresSel_TypeDef:TIM2_PrescalerSelection:预分频选择
+  39          *出口参数:void
+  40          **************************************************/
+  41          void TIM2_PrescalerSelection(TIM2_PresSel_TypeDef TIM2_PrescalerSelection)
+  42          {
+  43   1        TXINX = 0x02;
+  44   1      
+  45   1        if (TIM2_PrescalerSelection == TIM2_PRESSEL_FSYS_D12)
+  46   1        {
+  47   2          TXMOD &= 0X7F;
+  48   2        }
+  49   1        else if (TIM2_PrescalerSelection == TIM2_PRESSEL_FSYS_D1)
+  50   1        {
+  51   2          TXMOD |= 0X80;
+  52   2        }
+  53   1      }
+C51 COMPILER V9.54   SC95F_TIMER2                                                          04/19/2023 15:54:52 PAGE 2   
+
+  54          
+  55          /**************************************************
+  56          *函数名称:void TIM2_TimeBaseInit(TIM2_CountMode_TypeDef TIM2_CountMode, TIM2_CountDirection_TypeDef TIM2_C
+             -ountDirection)
+  57          *函数功能:TIM2基本设置配置函数
+  58          *入口参数:
+  59          TIM2_CountMode_TypeDef:TIM2_CountMode:计数/定时模式选择
+  60          TIM2_CountDirection_TypeDef:TIM2_CountDirection:计数方向选择
+  61          *出口参数:void
+  62          **************************************************/
+  63          void TIM2_TimeBaseInit(TIM2_CountMode_TypeDef TIM2_CountMode,
+  64                                 TIM2_CountDirection_TypeDef TIM2_CountDirection)
+  65          {
+  66   1        TXINX = 0x02;
+  67   1      
+  68   1        if (TIM2_CountMode == TIM2_MODE_TIMER)
+  69   1        {
+  70   2          TXCON &= 0XFD;
+  71   2        }
+  72   1        else if (TIM2_CountMode == TIM2_MODE_COUNTER)
+  73   1        {
+  74   2          TXCON |= 0X02;
+  75   2        }
+  76   1        if (TIM2_CountDirection == TIM2_COUNTDIRECTION_UP)
+  77   1        {
+  78   2          TXMOD &= 0XFE;
+  79   2        }
+  80   1        else if (TIM2_CountDirection == TIM2_COUNTDIRECTION_DOWN_UP)
+  81   1        {
+  82   2          TXMOD |= 0X01;
+  83   2        }
+  84   1      }
+  85          
+  86          /**************************************************
+  87          *函数名称:void TIM2_WorkMode0Config(uint16_t TIM2_SetCounter)
+  88          *函数功能:TIMER2工作模式0配置函数
+  89          *入口参数:
+  90          uint16_t:TIM2_SetCounter:配置计数初值
+  91          *出口参数:void
+  92          **************************************************/
+  93          void TIM2_WorkMode0Config(uint16_t TIM2_SetCounter)
+  94          {
+  95   1        TXINX = 0x02;
+  96   1        CP = 1;
+  97   1        TLX = TIM2_SetCounter % 256;
+  98   1        THX = TIM2_SetCounter / 256;
+  99   1      }
+ 100          
+ 101          /**************************************************
+ 102          *函数名称:void TIM2_WorkMode1Config(uint16_t TIM2_SetCounter)
+ 103          *函数功能:TIMER2工作模式1配置函数
+ 104          *入口参数:
+ 105          uint16_t:TIM2_SetCounter:配置计数初值
+ 106          *出口参数:void
+ 107          **************************************************/
+ 108          void TIM2_WorkMode1Config(uint16_t TIM2_SetCounter)
+ 109          {
+ 110   1        TXINX = 0x02;
+ 111   1        RCAPXL = TIM2_SetCounter % 256;
+ 112   1        RCAPXH = TIM2_SetCounter / 256;
+ 113   1      
+ 114   1        TLX = RCAPXL;
+C51 COMPILER V9.54   SC95F_TIMER2                                                          04/19/2023 15:54:52 PAGE 3   
+
+ 115   1        THX = RCAPXH;
+ 116   1      }
+ 117          
+ 118          /**************************************************
+ 119          *函数名称:void TIM2_WorkMode3Config(uint16_t TIM2_SetCounter)
+ 120          *函数功能:TIMER2工作模式3配置函数
+ 121          *入口参数:
+ 122          uint16_t:TIM2_SetCounter:配置计数初值
+ 123          *出口参数:void
+ 124          **************************************************/
+ 125          void TIM2_WorkMode3Config(uint16_t TIM2_SetCounter)
+ 126          {
+ 127   1        TXINX = 0x02;
+ 128   1        RCAPXL = TIM2_SetCounter % 256;
+ 129   1        RCAPXH = TIM2_SetCounter / 256;
+ 130   1        TXMOD |= 0X02;
+ 131   1      }
+ 132          /**************************************************
+ 133          *函数名称:void TIM2_WorkModeConfig(TIM2_WorkMode_TypeDef TIM2_WorkMode, uint16_t TIM2_SetCounter)
+ 134          *函数功能:TIMER2工作模式配置函数
+ 135          *入口参数:
+ 136          TIM2_WorkMode_TypeDef:TIM2_WorkMode:TIMER2工作模式选择
+ 137          uint16_t:TIM2_SetCounter:TIMER2计数初值配置
+ 138          *出口参数:void
+ 139          **************************************************/
+ 140          void TIM2_WorkModeConfig(TIM2_WorkMode_TypeDef TIM2_WorkMode, uint16_t TIM2_SetCounter)
+ 141          {
+ 142   1        switch (TIM2_WorkMode)
+ 143   1        {
+ 144   2        case TIM2_WORK_MODE0:
+ 145   2          TIM2_WorkMode0Config(TIM2_SetCounter);
+ 146   2          break;
+ 147   2      
+ 148   2        case TIM2_WORK_MODE1:
+ 149   2          TIM2_WorkMode1Config(TIM2_SetCounter);
+ 150   2          break;
+ 151   2      
+ 152   2        case TIM2_WORK_MODE3:
+ 153   2          TIM2_WorkMode3Config(TIM2_SetCounter);
+ 154   2          break;
+ 155   2      
+ 156   2        default:
+ 157   2          break;
+ 158   2        }
+ 159   1      }
+ 160          /*****************************************************
+ 161          *函数名称:void TIM2_SetEXEN2(FunctionalState NewState)
+ 162          *函数功能:TIMER2_EXEN2配置函数
+ 163          *入口参数:
+ 164          FunctionalState:NewState:EXEN2使能选择
+ 165          *出口参数:void
+ 166          *****************************************************/
+ 167          void TIM2_SetEXEN2(FunctionalState NewState)
+ 168          {
+ 169   1        TXINX = 0x02;
+ 170   1      
+ 171   1        if (NewState == DISABLE)
+ 172   1        {
+ 173   2          EXENX = 0;
+ 174   2        }
+ 175   1        else
+ 176   1        {
+C51 COMPILER V9.54   SC95F_TIMER2                                                          04/19/2023 15:54:52 PAGE 4   
+
+ 177   2          EXENX = 1;
+ 178   2        }
+ 179   1      }
+ 180          
+ 181          /*****************************************************
+ 182          *函数名称:void TIM2_Cmd(FunctionalState NewState)
+ 183          *函数功能:TIMER2功能开关函数
+ 184          *入口参数:
+ 185          FunctionalState:NewState:功能启动/关闭选择
+ 186          *出口参数:void
+ 187          *****************************************************/
+ 188          void TIM2_Cmd(FunctionalState NewState)
+ 189          {
+ 190   1        TXINX = 0x02;
+ 191   1      
+ 192   1        if (NewState == DISABLE)
+ 193   1        {
+ 194   2          TRX = 0;
+ 195   2        }
+ 196   1        else
+ 197   1        {
+ 198   2          TRX = 1;
+ 199   2        }
+ 200   1      }
+ 201          
+ 202          /*****************************************************
+ 203          *函数名称:void TIM2_ITConfig(FunctionalState NewState, PriorityStatus Priority)
+ 204          *函数功能:TIMER2
+ 205          *入口参数:
+ 206          FunctionalState:NewState:中断使能/关闭选择
+ 207          PriorityStatus:Priority:中断优先级选择
+ 208          *出口参数:void
+ 209          *****************************************************/
+ 210          void TIM2_ITConfig(FunctionalState NewState, PriorityStatus Priority)
+ 211          {
+ 212   1        TXINX = 0x02;
+ 213   1      
+ 214   1        if (NewState == DISABLE)
+ 215   1        {
+ 216   2          ET2 = 0;
+ 217   2        }
+ 218   1        else
+ 219   1        {
+ 220   2          ET2 = 1;
+ 221   2        }
+ 222   1      
+ 223   1        if (Priority == LOW)
+ 224   1        {
+ 225   2          IPT2 = 0;
+ 226   2        }
+ 227   1        else
+ 228   1        {
+ 229   2          IPT2 = 1;
+ 230   2        }
+ 231   1      }
+ 232          
+ 233          /*****************************************************
+ 234          *函数名称:FlagStatus TIM2_GetFlagStatus(void)
+ 235          *函数功能:获得TIMER2中断标志状态
+ 236          *入口参数:
+ 237          TIM2_Flag_TypeDef:TIM2_Flag:TIMER2标志选择
+ 238          *出口参数:
+C51 COMPILER V9.54   SC95F_TIMER2                                                          04/19/2023 15:54:52 PAGE 5   
+
+ 239          FlagStatus:TIMER2中断标志状态
+ 240          *****************************************************/
+ 241          FlagStatus TIM2_GetFlagStatus(TIM2_Flag_TypeDef TIM2_Flag)
+ 242          {
+ 243   1        FlagStatus status = RESET;
+ 244   1        TXINX = 0x02;
+ 245   1      
+ 246   1        if ((TIM2_Flag & TXCON) != (uint8_t)RESET)
+ 247   1        {
+ 248   2          status = SET;
+ 249   2        }
+ 250   1        else
+ 251   1        {
+ 252   2          status = RESET;
+ 253   2        }
+ 254   1      
+ 255   1        return status;
+ 256   1      }
+ 257          
+ 258          /*****************************************************
+ 259          *函数名称:void TIMX_ClearFlag(void)
+ 260          *函数功能:清除TIMER2中断标志状态
+ 261          *入口参数:
+ 262          TIM2_Flag_TypeDef:TIM2_Flag:TIMER2标志选择
+ 263          *出口参数:void
+ 264          *****************************************************/
+ 265          void TIM2_ClearFlag(TIM2_Flag_TypeDef TIM2_Flag)
+ 266          {
+ 267   1        TXINX = 0x02;
+ 268   1        TXCON &= (~TIM2_Flag);
+ 269   1      }
+ 270          
+ 271          /******************* (C) COPYRIGHT 2021 SinOne Microelectronics *****END OF FILE****/
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    281    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,14 @@
+.\objects\hal_tim.o: MN32_HAL\hal_tim.c
+.\objects\hal_tim.o: MN32_HAL\hal_rcc.h
+.\objects\hal_tim.o: .\Include\types.h
+.\objects\hal_tim.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\hal_tim.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdbool.h
+.\objects\hal_tim.o: .\Include\reg_common.h
+.\objects\hal_tim.o: .\Include\core_cm0.h
+.\objects\hal_tim.o: .\Include\cmsis_compiler.h
+.\objects\hal_tim.o: .\Include\cmsis_armcc.h
+.\objects\hal_tim.o: .\Include\reg_adc.h
+.\objects\hal_tim.o: .\Include\reg_rcc.h
+.\objects\hal_tim.o: .\Include\reg_pwr.h
+.\objects\hal_tim.o: MN32_HAL\hal_tim.h
+.\objects\hal_tim.o: .\Include\reg_tim.h

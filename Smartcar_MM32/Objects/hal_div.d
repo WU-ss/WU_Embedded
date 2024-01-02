@@ -1,0 +1,10 @@
+.\objects\hal_div.o: MN32_HAL\hal_div.c
+.\objects\hal_div.o: MN32_HAL\hal_div.h
+.\objects\hal_div.o: .\Include\types.h
+.\objects\hal_div.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\hal_div.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdbool.h
+.\objects\hal_div.o: .\Include\reg_common.h
+.\objects\hal_div.o: .\Include\core_cm0.h
+.\objects\hal_div.o: .\Include\cmsis_compiler.h
+.\objects\hal_div.o: .\Include\cmsis_armcc.h
+.\objects\hal_div.o: .\Include\reg_div.h

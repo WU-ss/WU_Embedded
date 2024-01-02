@@ -1,0 +1,154 @@
+C51 COMPILER V9.54   DRAW                                                                  04/19/2023 15:54:54 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE DRAW
+OBJECT MODULE PLACED IN ..\Output\draw.obj
+COMPILER INVOKED BY: D:\Keil5\C51\BIN\C51.EXE ..\Bank2\draw.c LARGE OBJECTADVANCED OPTIMIZE(8,SIZE) BROWSE INCDIR(..\FWL
+                    -ib\SC95F_Lib\inc;..\User;..\Bank1;..\Bank2;..\Bank3) DEFINE(SC95F8x3x) DEBUG PRINT(..\List\draw.lst) OBJECT(..\Output\dr
+                    -aw.obj)
+
+line level    source
+
+   1          #include "draw.h"
+   2          #include "basic_draw.h"
+   3          #include "basic_draw.h"
+   4          #include "Lcd_Driver.h"
+   5          #include "GUI.h"
+   6          #include "stdlib.h"
+   7          #include "stdio.h"
+   8          
+   9          char s[2] = {0};
+  10          
+  11          //设置开始页面
+  12          void draw_start_page(void){
+  13   1              Gui_DrawFont_GBK24(30,20,GRAY0,BACK_COLOR,"SPACE");
+  14   1              Gui_DrawFont_GBK24(72,40,GRAY0,BACK_COLOR,"WAR");
+  15   1              Gui_DrawFont_GBK24(20,70,GRAY1,BACK_COLOR,"Press Key");
+  16   1              DisplayButtonUp(98,70,120,86);
+  17   1              
+  18   1              draw_my_plane(14,113);
+  19   1              draw_my_plane(64,113);
+  20   1              draw_my_plane(114,113); 
+  21   1      }
+  22          
+  23          //设置基础界面
+  24          void init_play_interface(void){
+  25   1              Lcd_Clear(BACK_COLOR);
+  26   1              Gui_DrawFont_GBK16(0,0,GRAY0,BACK_COLOR,"SCROE");       
+  27   1              Gui_DrawFont_GBK16(90,0,GRAY0,BACK_COLOR,"LIFE");
+  28   1      }
+  29          
+  30          //设置结束页面
+  31          void draw_end(int8_t *score,int8_t *score_2, int8_t *score_3){
+  32   1              Lcd_Clear(BACK_COLOR);
+  33   1              
+  34   1              Gui_DrawFont_GBK16(30,20,GRAY0,BACK_COLOR,"GAME OVER");
+  35   1              Gui_DrawFont_GBK16(10,40,GRAY0,BACK_COLOR,"My SCORE:");
+  36   1              sprintf(s, "%d", (int)*score);
+  37   1              Gui_DrawFont_GBK24(90,40,POINT_COLOR,BACK_COLOR,s);
+  38   1              //LCD_ShowxNum(100,170,*score_2,4,24,"0");
+  39   1              if(*score_2 == 0 && *score_3 == 0){
+  40   2                      *score_2 = *score;
+  41   2              }else if(*score_2 != 0 && *score_3 == 0){
+  42   2                      *score_3 = *score_2;
+  43   2                      *score_2 = *score;
+  44   2                      Gui_DrawFont_GBK16(10,40,GRAY0,BACK_COLOR,"P2 SCORE:");
+  45   2      //              LCD_ShowxNum(100,170,*score_2,4,24,0);  
+  46   2              }
+  47   1              *score = 0;
+  48   1              
+  49   1              draw_my_plane(14,113);
+  50   1              draw_my_plane(64,113);
+  51   1              draw_my_plane(114,113); 
+  52   1              
+  53   1      }
+C51 COMPILER V9.54   DRAW                                                                  04/19/2023 15:54:54 PAGE 2   
+
+  54          
+  55          //设置标头
+  56          void draw_play_title(int8_t score, int8_t life){
+  57   1              
+  58   1              int i=0;
+  59   1              int start_x = 95;
+  60   1              Lcd_Clearsome(0,113,128,128,BACK_COLOR);
+  61   1              Lcd_Clearsome(start_x,20-3,128,20+4,BACK_COLOR);
+  62   1              sprintf(s, "%d", (int)score);
+  63   1              Gui_DrawFont_GBK24(50,0,POINT_COLOR,BACK_COLOR,s);
+  64   1      //      Gui_DrawFont_Num32(40,0,POINT_COLOR,BACK_COLOR,score);          //显示分数
+  65   1              for(i=0;i<life;i++)
+  66   1              {
+  67   2                      Gui_Circle(start_x+10*i,20,3,RED);
+  68   2              }
+  69   1      }
+  70          
+  71          void draw_all_my_buttles(int8_t my_buttles[20][2]){
+  72   1              int i =0;
+  73   1              for(i=0; i<20; i++){
+  74   2                      if(my_buttles[i][0] != 0){
+  75   3                              draw_my_bullet(my_buttles[i][0],my_buttles[i][1]);
+  76   3                      }
+  77   2              }
+  78   1      }
+  79          
+  80          void draw_all_enemy_planes(int8_t enemy_planes[10][2]){
+  81   1              int i = 0;
+  82   1              for(i=0; i<10; i++){
+  83   2                      if(enemy_planes[i][0] != 0){
+  84   3                              draw_enemy_plane(enemy_planes[i][0],enemy_planes[i][1]);
+  85   3                      }
+  86   2              }
+  87   1      }
+  88          
+  89          void draw_all_enemy_buttles(int8_t enemy_buttles[20][2]){
+  90   1              int i =0;
+  91   1              for(i=0; i<20; i++){
+  92   2                      if(enemy_buttles[i][0] != 0){
+  93   3                              draw_enemy_bullet(enemy_buttles[i][0],enemy_buttles[i][1]);
+  94   3                      }
+  95   2              }
+  96   1      }
+  97          
+  98          void draw_both_buttles(int8_t my_buttles[10][2],int8_t his_buttles[10][2]){
+  99   1              int i =0;
+ 100   1              for(i=0; i<10; i++){
+ 101   2                      if(my_buttles[i][0] != 0){
+ 102   3                              draw_my_bullet(my_buttles[i][0],my_buttles[i][1]);
+ 103   3                      }
+ 104   2                      if(his_buttles[i][0] != 0){
+ 105   3                              draw_my_bullet(his_buttles[i][0],his_buttles[i][1]);
+ 106   3                      }
+ 107   2              }
+ 108   1      }
+ 109          
+ 110          void draw_play_all(int8_t score,int8_t life, int8_t my_plane[2], int8_t my_buttles[20][2], int8_t boss[2],
+             - int8_t enemy_planes[10][2], int8_t enemy_buttles[20][2]){
+ 111   1              draw_play_title(score,life);
+ 112   1              
+ 113   1              draw_my_plane(my_plane[0],my_plane[1]);
+ 114   1              draw_all_my_buttles(my_buttles);
+C51 COMPILER V9.54   DRAW                                                                  04/19/2023 15:54:54 PAGE 3   
+
+ 115   1              if(boss[0]!= 0){
+ 116   2                      draw_boss(boss[0],boss[1]);
+ 117   2              }
+ 118   1              draw_all_enemy_planes(enemy_planes);
+ 119   1              draw_all_enemy_buttles(enemy_buttles);
+ 120   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1507    ----
+   CONSTANT SIZE    =     64    ----
+   XDATA SIZE       =      2      55
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

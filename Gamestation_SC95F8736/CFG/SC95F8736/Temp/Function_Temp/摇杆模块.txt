@@ -1,0 +1,7 @@
+#define SCD_Joystick_PinX 8 //SCD_Joystick_PinX 
+#define SCD_Joystick_PinY 9 //SCD_Joystick_PinY 
+#define SCD_Joystick_VRX_INIT 0x0104 //SCD_Joystick_VRX_INIT 
+#define SCD_Joystick_VRX P12 //SCD_Joystick_VRX 
+#define SCD_Joystick_VRY_INIT 0x0104 //SCD_Joystick_VRY_INIT 
+#define SCD_Joystick_VRY P12 //SCD_Joystick_VRY 
+//definition write here

@@ -1,0 +1,162 @@
+C51 COMPILER V9.01   SC95F_IAP                                                             09/07/2020 16:59:32 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE SC95F_IAP
+OBJECT MODULE PLACED IN ..\Output\sc95f_iap.obj
+COMPILER INVOKED BY: E:\Keil\C51\BIN\C51.EXE ..\FWLib\SC95F_Lib\src\sc95f_iap.c OMF2 BROWSE INCDIR(..\FWLib\SC95F_Lib\in
+                    -c;..\User) DEFINE(SC95F8x2x) DEBUG PRINT(..\List\sc95f_iap.lst) OBJECT(..\Output\sc95f_iap.obj)
+
+line level    source
+
+   1          //************************************************************
+   2          //  Copyright (c) 深圳市赛元微电子有限公司
+   3          //      文件名称        : sc95f_iap.c
+   4          //      作者            : 
+   5          //      模块功能        : IAP固件库函数C文件
+   6          //      局部函数列表:
+   7          //  最后更正日期: 2020/8/13
+   8          //      版本            : V1.0 
+   9          //  说明        ：该文件仅适用于SC95Fxx1x、SC95Fxx2x系列芯片  
+  10          //*************************************************************
+  11          
+  12          #include "sc95f_iap.h"
+  13          
+  14          /**************************************************
+  15          *函数名称：void IAP_DeInit(void)
+  16          *函数功能：IAP相关寄存器复位至缺省值
+  17          *入口参数：void
+  18          *出口参数：void
+  19          **************************************************/
+  20          void IAP_DeInit(void)
+  21          {
+  22   1              IAPKEY = 0X00;
+  23   1              IAPADL = 0X00;
+  24   1              IAPADH = 0X00;
+  25   1              IAPADE = 0X00;
+  26   1              IAPDAT = 0X00;
+  27   1              IAPCTL = 0X00;  
+  28   1      }
+  29          
+  30          /**************************************************
+  31          *函数名称：void IAP_ProgramByte(uint16_t Address, uint8_t Data, IAP_MemType_TypeDef IAP_MemType, uint8_t W
+             -riteTimeLimit)
+  32          *函数功能：IAP写入一个字节
+  33          *入口参数：Address                      IAP操作地址
+  34                             Data                         写入的数据
+  35                             IAP_MemType          IAP操作对象（ROM、IFB）
+  36                             WriteTimeLimit       IAP操作时限     (值需大于等于0x40)
+  37          *出口参数：void
+  38          **************************************************/
+  39          void IAP_ProgramByte(uint16_t Address, uint8_t Data, IAP_MemType_TypeDef IAP_MemType, uint8_t WriteTimeLim
+             -it)
+  40          {
+  41   1              BitStatus tmpbit;
+  42   1              tmpbit = (BitStatus)EA;
+  43   1              if(tmpbit != RESET)
+  44   1              {
+  45   2                      disableInterrupts();
+  46   2              }
+  47   1              
+  48   1              IAPADE = IAP_MemType;
+  49   1              IAPDAT = Data;
+  50   1              IAPADH = (uint8_t)(Address >> 8);
+  51   1              IAPADL = (uint8_t)Address; 
+  52   1              IAPKEY = WriteTimeLimit;
+C51 COMPILER V9.01   SC95F_IAP                                                             09/07/2020 16:59:32 PAGE 2   
+
+  53   1              IAPCTL = 0x10;
+  54   1              IAPCTL |= 0x02;
+  55   1              _nop_();
+  56   1              _nop_();
+  57   1              _nop_();
+  58   1              _nop_();
+  59   1          _nop_();
+  60   1              _nop_();
+  61   1              _nop_();
+  62   1              _nop_();
+  63   1              IAPADE = IAP_MEMTYPE_ROM;
+  64   1      
+  65   1              if(tmpbit != RESET)
+  66   1              {
+  67   2                      enableInterrupts();
+  68   2              }               
+  69   1      }
+  70          
+  71          /**************************************************
+  72          *函数名称：uint8_t IAP_ReadByte(uint16_t Address, IAP_MemType_TypeDef IAP_MemType)
+  73          *函数功能：IAP读一个字节
+  74          *入口参数：Address                      IAP操作地址
+  75                             FLASH_MemType        IAP操作对象（ROM、IFB）
+  76          *出口参数：uint8_t                      读到的字节数据
+  77          **************************************************/
+  78          uint8_t IAP_ReadByte(uint16_t Address,IAP_MemType_TypeDef IAP_MemType)
+  79          {
+  80   1              uint8_t tmpbyte;
+  81   1              BitStatus tmpbit;
+  82   1              tmpbit = (BitStatus)EA;
+  83   1              if(tmpbit != RESET)
+  84   1              {
+  85   2                      disableInterrupts();
+  86   2              }
+  87   1      
+  88   1              IAPADE = IAP_MemType;
+  89   1              tmpbyte = *((uint8_t code*)Address);
+  90   1              IAPADE = IAP_MEMTYPE_ROM;
+  91   1      
+  92   1              if(tmpbit != RESET)
+  93   1              {
+  94   2                      enableInterrupts();
+  95   2              }
+  96   1              return tmpbyte; 
+  97   1      }
+  98          
+  99          /**************************************************
+ 100          *函数名称：void IAP_SectorErase(IAP_MemType_TypeDef IAP_MemType, uint16_t IAP_SectorEraseAddress)
+ 101          *函数功能：IAP扇区擦除
+ 102          *入口参数：IAP_MemType          IAP操作对象（ROM、IFB）
+ 103                             IAP_SectorEraseAddress  IAP扇区擦除目标地址
+ 104                             WriteTimeLimit       IAP操作时限     (值需大于等于0x40)
+ 105          *出口参数：void
+ 106          **************************************************/
+ 107          void IAP_SectorErase(IAP_MemType_TypeDef IAP_MemType, uint16_t IAP_SectorEraseAddress, uint8_t WriteTimeLi
+             -mit)
+ 108          {
+ 109   1              IAPADE = IAP_MemType;
+ 110   1              IAPADH = (uint8_t)(IAP_SectorEraseAddress >> 8);  //擦除IAP目标地址高位值
+ 111   1              IAPADL = (uint8_t)IAP_SectorEraseAddress;                 //擦除IAP目标地址低位值
+ 112   1              IAPKEY = WriteTimeLimit;
+ 113   1              IAPCTL = 0x20;
+C51 COMPILER V9.01   SC95F_IAP                                                             09/07/2020 16:59:32 PAGE 3   
+
+ 114   1              IAPCTL |= 0x02;
+ 115   1              _nop_();
+ 116   1              _nop_();
+ 117   1              _nop_();
+ 118   1              _nop_();
+ 119   1          _nop_();
+ 120   1              _nop_();
+ 121   1              _nop_();
+ 122   1              _nop_();
+ 123   1              IAPADE = IAP_MEMTYPE_ROM; 
+ 124   1      }
+ 125          
+ 126          
+ 127          /******************* (C) COPYRIGHT 2020 SinOne Microelectronics *****END OF FILE****/
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    117    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       5
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

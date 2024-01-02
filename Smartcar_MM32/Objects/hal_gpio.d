@@ -1,0 +1,14 @@
+.\objects\hal_gpio.o: MN32_HAL\hal_gpio.c
+.\objects\hal_gpio.o: MN32_HAL\hal_gpio.h
+.\objects\hal_gpio.o: .\Include\types.h
+.\objects\hal_gpio.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\hal_gpio.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdbool.h
+.\objects\hal_gpio.o: .\Include\reg_gpio.h
+.\objects\hal_gpio.o: MN32_HAL\hal_rcc.h
+.\objects\hal_gpio.o: .\Include\reg_common.h
+.\objects\hal_gpio.o: .\Include\core_cm0.h
+.\objects\hal_gpio.o: .\Include\cmsis_compiler.h
+.\objects\hal_gpio.o: .\Include\cmsis_armcc.h
+.\objects\hal_gpio.o: .\Include\reg_adc.h
+.\objects\hal_gpio.o: .\Include\reg_rcc.h
+.\objects\hal_gpio.o: .\Include\reg_pwr.h

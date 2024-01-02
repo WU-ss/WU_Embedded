@@ -1,0 +1,363 @@
+C51 COMPILER V9.54   RUN                                                                   04/19/2023 15:54:54 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE RUN
+OBJECT MODULE PLACED IN ..\Output\run.obj
+COMPILER INVOKED BY: D:\Keil5\C51\BIN\C51.EXE ..\Bank2\run.c LARGE OBJECTADVANCED OPTIMIZE(8,SIZE) BROWSE INCDIR(..\FWLi
+                    -b\SC95F_Lib\inc;..\User;..\Bank1;..\Bank2;..\Bank3) DEFINE(SC95F8x3x) DEBUG PRINT(..\List\run.lst) OBJECT(..\Output\run.
+                    -obj)
+
+line level    source
+
+   1          #include "run.h"
+   2          #include "basic_draw.h"
+   3          #include "draw.h"
+   4          #include "Lcd_Driver.h"
+   5          #include "GUI.h"
+   6          #include "stdlib.h" 
+   7          #include "Delay.h"
+   8          #include "Key.h"
+   9          
+  10          int left_limit = 0;
+  11          int right_limit = 128;
+  12          int up_limit = 42;
+  13          int down_limit = 128;
+  14          
+  15          void generate_enemy_planes(int8_t level, int8_t enemy_planes[10][2]){
+  16   1              int i = 0;
+  17   1              
+  18   1              for(i=0; i<10; i++){
+  19   2                      if(enemy_planes[i][0] == 0){
+  20   3                              if(i < level*3){
+  21   4                                      if(rand()%100 < level + 3){
+  22   5                                              enemy_planes[i][0] = rand()%100 + 15;  //随机飞机的横坐标
+  23   5                                              enemy_planes[i][1] = 30;               //随机飞机的纵坐标
+  24   5                                      }
+  25   4                              }
+  26   3                              break;
+  27   3                      }
+  28   2              }
+  29   1      }
+  30          
+  31          void switch_my_act(int8_t my_plane[2],int8_t my_buttles[20][2]){
+  32   1              int i=0;
+  33   1              int key = KEY_Scan(1);
+  34   1              Lcd_Clearsome(my_plane[0]-14,my_plane[1]-14,my_plane[0]+14,my_plane[1]+14,BACK_COLOR);
+  35   1              switch(key)
+  36   1                      {
+  37   2                              case R_PRES:
+  38   2                                      if(my_plane[0]+10 < right_limit - 10){
+  39   3                                      my_plane[0] = my_plane[0]+10;
+  40   3                              }
+  41   2                              
+  42   2                                      break;
+  43   2                              
+  44   2                              case L_PRES:
+  45   2                                      if(my_plane[0]-10 > left_limit + 10){
+  46   3                                      my_plane[0] = my_plane[0]-10;
+  47   3                              }
+  48   2                                      break;
+  49   2                              
+  50   2                              case KEY_X_PRES:                                
+  51   2                                      for(i=0; i<20; i++){
+  52   3                                      if(my_buttles[i][0] == 0){
+  53   4                                              my_buttles[i][0] = my_plane[0];
+C51 COMPILER V9.54   RUN                                                                   04/19/2023 15:54:54 PAGE 2   
+
+  54   4                                              my_buttles[i][1] = my_plane[1]-15;
+  55   4                                              break;  
+  56   4                                      }
+  57   3                              }
+  58   2                                      break;
+  59   2                              default:
+  60   2                                      break;
+  61   2                                              
+  62   2                      } 
+  63   1      }       
+  64                  
+  65          
+  66          void update_my_buttles(int8_t my_buttles[20][2]){
+  67   1              int i=0;
+  68   1              for(i=0; i<20; i++){
+  69   2                      if(my_buttles[i][0] != 0){
+  70   3                              Lcd_Clearsome(my_buttles[i][0]-3,my_buttles[i][1]-3,my_buttles[i][0]+3,my_buttles[i][1]+3,BACK_COLOR);
+  71   3                              
+  72   3                              my_buttles[i][1] = my_buttles[i][1] - 3;
+  73   3                              if(my_buttles[i][1] < 42){                              
+  74   4                                      my_buttles[i][0] = 0;
+  75   4                                      my_buttles[i][1] = 0;
+  76   4                              }
+  77   3                      }
+  78   2              }
+  79   1              
+  80   1      }
+  81          
+  82          void update_enemy_buttles(int8_t enemy_buttles[20][2], int8_t level){
+  83   1              int i=0;
+  84   1              
+  85   1              for(i=0; i<20; i++){
+  86   2                      if(enemy_buttles[i][0] != 0){
+  87   3                              Lcd_Clearsome(enemy_buttles[i][0]-2,enemy_buttles[i][1]-2,      enemy_buttles[i][0]+2,enemy_buttles[i][1]+2,
+             -BACK_COLOR);
+  88   3                              enemy_buttles[i][1] = enemy_buttles[i][1] + level + 1;
+  89   3      
+  90   3                              if(enemy_buttles[i][1] > 126){                          
+  91   4                                      enemy_buttles[i][0] = 0;
+  92   4                                      enemy_buttles[i][1] = 0;
+  93   4                      
+  94   4                              }
+  95   3                      }
+  96   2              }
+  97   1      }
+  98          
+  99          void update_enemy_planes(int8_t enemy_planes[10][2], int8_t level){
+ 100   1              int i=0;
+ 101   1              
+ 102   1              for(i=0; i<10; i++){
+ 103   2                      if(enemy_planes[i][0] != 0){
+ 104   3                              Lcd_Clearsome(enemy_planes[i][0]-8,enemy_planes[i][1]-8,        enemy_planes[i][0]+8,enemy_planes[i][1]+8,BACK
+             -_COLOR);        
+ 105   3                              enemy_planes[i][1] = enemy_planes[i][1] + level;
+ 106   3      
+ 107   3                              if(enemy_planes[i][1] > 100){                   
+ 108   4                                      enemy_planes[i][0] = 0;
+ 109   4                                      enemy_planes[i][1] = 0;
+ 110   4                              }
+ 111   3                      }
+ 112   2              }
+ 113   1      }
+C51 COMPILER V9.54   RUN                                                                   04/19/2023 15:54:54 PAGE 3   
+
+ 114          
+ 115          
+ 116          void check_my_plane_to_enemy_plane_collide(int8_t *score,int8_t *life,int8_t my_plane[2],int8_t enemy_plan
+             -es[10][2]){
+ 117   1              int i=0;
+ 118   1              int temp=0;
+ 119   1              
+ 120   1              for(i=0; i<10; i++){
+ 121   2                      if(enemy_planes[i][0] != 0){
+ 122   3                              if(abs(enemy_planes[i][0] - my_plane[0]) <= 22){
+ 123   4                                      if(abs(enemy_planes[i][1] - my_plane[1]) <= 22){
+ 124   5                                              Lcd_Clearsome(my_plane[0]-14,my_plane[1]-14,my_plane[0]+14,my_plane[1]+14,BACK_COLOR);
+ 125   5                                              Lcd_Clearsome(enemy_planes[i][0]-8,enemy_planes[i][1]-8,enemy_planes[i][0]+8,enemy_planes[i][1]+8,BAC
+             -K_COLOR);
+ 126   5                                      
+ 127   5                                              my_plane[0] = 64;
+ 128   5                                              my_plane[1] = 113;
+ 129   5                                              
+ 130   5                                              enemy_planes[i][0] = 0;
+ 131   5                                              enemy_planes[i][1] = 0;
+ 132   5                                              
+ 133   5                                              temp = (*score);
+ 134   5                                              (*score) = temp+1;
+ 135   5                                              
+ 136   5                                              temp = (*life);
+ 137   5                                              (*life) = temp-1;
+ 138   5                                              
+ 139   5                                              Delay_ms(100);
+ 140   5                                              
+ 141   5                                              break;
+ 142   5                                      }
+ 143   4                              }
+ 144   3                      }
+ 145   2              }
+ 146   1      }
+ 147          
+ 148          
+ 149          void check_my_buttles_to_enemy_plane_collide(int8_t *score,int8_t my_buttles[20][2], int8_t enemy_planes[1
+             -0][2]){
+ 150   1              int i=0;
+ 151   1              int j=0;
+ 152   1              int temp=0;
+ 153   1              
+ 154   1              for(i=0; i<10; i++){
+ 155   2                      if(enemy_planes[i][0] != 0){
+ 156   3                              for(j=0; j<20; j++){
+ 157   4                                      //碰撞检测
+ 158   4                                      if(abs(my_buttles[j][0] - enemy_planes[i][0]) <= 9){
+ 159   5                                              if(abs(my_buttles[j][1] - enemy_planes[i][1]) <= 9){
+ 160   6                                                      Lcd_Clearsome(enemy_planes[i][0]-8,enemy_planes[i][1]-8,enemy_planes[i][0]+8,enemy_planes[i][1]+8,BA
+             -CK_COLOR);
+ 161   6      
+ 162   6                                                      my_buttles[j][0] = 0;
+ 163   6                                                      my_buttles[j][1] = 0;
+ 164   6                                                      
+ 165   6                                                      enemy_planes[i][0] = 0;
+ 166   6                                                      enemy_planes[i][1] = 0;
+ 167   6                                                      
+ 168   6                                                      temp = (*score);
+ 169   6                                                      (*score) = temp+1;
+ 170   6                                                      
+ 171   6                                                  Delay_ms(100);
+C51 COMPILER V9.54   RUN                                                                   04/19/2023 15:54:54 PAGE 4   
+
+ 172   6                                              
+ 173   6                                                      break;
+ 174   6                                              }
+ 175   5                                      }
+ 176   4                              }
+ 177   3                      }
+ 178   2              }
+ 179   1      }
+ 180          
+ 181          void check_my_buttles_to_boss_collide(int8_t *score, int8_t *boss_life,int8_t my_buttles[20][2], int8_t bo
+             -ss[2]){
+ 182   1              int i = 0;
+ 183   1              int temp = 0;
+ 184   1              for(i=0; i<20; i++){
+ 185   2                      if(my_buttles[i][0] != 0){
+ 186   3                              if(abs(my_buttles[i][0] - boss[0]) <= 21){
+ 187   4                                              if(abs(my_buttles[i][1] - boss[1]) <= 21){
+ 188   5                                                      Lcd_Clearsome(boss[0]-20, boss[1] - 20, boss[0] + 20, boss[1] + 20,BACK_COLOR);
+ 189   5                                              
+ 190   5                                                      my_buttles[i][0] = 0;
+ 191   5                                                      my_buttles[i][1] = 0;
+ 192   5                                                      
+ 193   5                                                      temp = (*score);
+ 194   5                                                      (*score) = temp+1;
+ 195   5                                                      
+ 196   5                                                      temp = (*boss_life);
+ 197   5                                                      (*boss_life) = temp-1;
+ 198   5                                                      
+ 199   5                                                  Delay_ms(20);
+ 200   5                              
+ 201   5                                                      break;
+ 202   5                                              }
+ 203   4                                      }
+ 204   3                      }
+ 205   2              }
+ 206   1      }
+ 207          
+ 208          
+ 209          void check_my_plane_to_enemy_buttles_collide(int8_t *life,      int8_t enemy_buttles[20][2], int8_t my_plane[2]
+             -){
+ 210   1              int temp = 0;
+ 211   1              int i = 0;
+ 212   1              for(i=0; i<20; i++){
+ 213   2                      if(enemy_buttles[i][0] != 0){
+ 214   3                              if(abs(enemy_buttles[i][0] - my_plane[0]) <= 15){
+ 215   4                                              if(abs(enemy_buttles[i][1] - my_plane[1]) <= 15){
+ 216   5                                                      
+ 217   5                                                      my_plane[0] = 64;
+ 218   5                                                  my_plane[1] = 113;
+ 219   5                                                      
+ 220   5                                                      enemy_buttles[i][0] = 0;
+ 221   5                                                      enemy_buttles[i][1] = 0;
+ 222   5                                                      
+ 223   5                                                      temp = (*life);
+ 224   5                                                  (*life) = temp-1;
+ 225   5                                                      
+ 226   5                                                  Delay_ms(20);
+ 227   5                                              
+ 228   5                                                break;
+ 229   5                                              }
+ 230   4                      }
+ 231   3              }
+C51 COMPILER V9.54   RUN                                                                   04/19/2023 15:54:54 PAGE 5   
+
+ 232   2       }
+ 233   1      }
+ 234          
+ 235          void generate_enemy_buttles(int8_t level, int8_t enemy_plane[10][2],  int8_t enemy_buttles[20][2]){
+ 236   1              int i = 0;
+ 237   1              int j = 0;
+ 238   1              for(i=0; i<10; i++){
+ 239   2                      
+ 240   2                      if(enemy_plane[i][0] != 0 && rand()%50 < level){
+ 241   3                              for(j=0; j<20; j++){
+ 242   4                                      if(enemy_buttles[j][0] == 0){
+ 243   5                                              enemy_buttles[j][0] = enemy_plane[i][0];
+ 244   5                                              enemy_buttles[j][1] = enemy_plane[i][1] + 15;
+ 245   5                                              break;
+ 246   5                                      }
+ 247   4                              }       
+ 248   3                      }
+ 249   2              }
+ 250   1      }
+ 251          
+ 252          void generate_boss_buttles(int8_t boss[2],  int8_t enemy_buttles[20][2]){
+ 253   1              int i = 0;
+ 254   1              int j = 0;
+ 255   1              for(i=0; i<11; i++){
+ 256   2                      
+ 257   2                      if(rand()%300 < 3){
+ 258   3                              for(j=0; j<20; j++){
+ 259   4                                      if(enemy_buttles[j][0] == 0){
+ 260   5                                              enemy_buttles[j][0] = boss[0] - 22 + i * 2;
+ 261   5                                              enemy_buttles[j][1] = boss[1] + 21;
+ 262   5                                              break;
+ 263   5                                      }
+ 264   4                              }       
+ 265   3                      }
+ 266   2              }
+ 267   1              for(j=0; j<20; j++)
+ 268   1              {
+ 269   2                      if(enemy_buttles[j][1]>123)
+ 270   2                      {
+ 271   3                              enemy_buttles[j][0]=0;
+ 272   3                              enemy_buttles[j][1]=0;
+ 273   3                      }
+ 274   2              }
+ 275   1      }
+ 276          
+ 277          void clear_all_enemy_plane(int8_t my_plane[2],  int8_t enemy_plane[10][2], int8_t my_buttles[20][2], int8_t
+             - enemy_buttles[20][2])
+ 278          {
+ 279   1              int i=0;
+ 280   1              for(i=0; i<10; i++)
+ 281   1              {
+ 282   2                      enemy_plane[i][0] = 0;
+ 283   2                      enemy_plane[i][1] = 0;
+ 284   2              }
+ 285   1              
+ 286   1              for(i=0; i<20; i++){
+ 287   2                      if(my_buttles[i][0] != 0){
+ 288   3                              my_buttles[i][0] = 0;
+ 289   3                              my_buttles[i][1] = 0;
+ 290   3                      }
+ 291   2              }
+ 292   1              
+C51 COMPILER V9.54   RUN                                                                   04/19/2023 15:54:54 PAGE 6   
+
+ 293   1              for(i=0; i<20; i++){
+ 294   2                      if(enemy_buttles[i][0] != 0){
+ 295   3                              enemy_buttles[i][0] = 0;
+ 296   3                              enemy_buttles[i][1] = 0;
+ 297   3                      }
+ 298   2              }
+ 299   1              
+ 300   1              Lcd_Clearsome(0,25,128,128,BACK_COLOR);
+ 301   1              draw_my_plane(my_plane[0],my_plane[1]);
+ 302   1      }
+ 303          
+ 304          void move_boss(int8_t boss[2], int8_t *pace){
+ 305   1                              
+ 306   1                              int temp = 0;
+ 307   1                              Lcd_Clearsome(boss[0]-23, boss[1] - 23, boss[0] + 24, boss[1] + 24,BACK_COLOR);
+ 308   1                              
+ 309   1                              boss[0] = boss[0] + (*pace);
+ 310   1                              
+ 311   1                              if(boss[0] < 30 || boss[0] > 98){                               
+ 312   2                                      temp = (*pace);
+ 313   2                                      (*pace) = -temp;
+ 314   2                              }
+ 315   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   4821    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      8     134
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

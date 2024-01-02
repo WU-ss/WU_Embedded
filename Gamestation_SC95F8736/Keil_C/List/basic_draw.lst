@@ -1,0 +1,175 @@
+C51 COMPILER V9.54   BASIC_DRAW                                                            04/19/2023 15:54:53 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE BASIC_DRAW
+OBJECT MODULE PLACED IN ..\Output\basic_draw.obj
+COMPILER INVOKED BY: D:\Keil5\C51\BIN\C51.EXE ..\Bank2\basic_draw.c LARGE OBJECTADVANCED OPTIMIZE(8,SIZE) BROWSE INCDIR(
+                    -..\FWLib\SC95F_Lib\inc;..\User;..\Bank1;..\Bank2;..\Bank3) DEFINE(SC95F8x3x) DEBUG PRINT(..\List\basic_draw.lst) OBJECT(
+                    -..\Output\basic_draw.obj)
+
+line level    source
+
+   1          #include "basic_draw.h"
+   2          #include "Lcd_Driver.h"
+   3          #include "GUI.h"
+   4          
+   5          int cross_width = 15; 
+   6          int cross_height = 15;
+   7          
+   8          int heart_width = 11;
+   9          int heart_height = 11;
+  10          
+  11          int buttle_width = 3; 
+  12          int buttle_height = 3;
+  13          
+  14          int star_width = 5;
+  15          int star_height = 9;
+  16                  
+  17          void draw_my_plane(int x, int y){
+  18   1              Gui_DrawLine(x, y-14, x-3.8, y-1.3,POINT_COLOR);
+  19   1              Gui_DrawLine(x-3.8, y-1.3, x-12.7,y+3.8,POINT_COLOR);
+  20   1              Gui_DrawLine(x-12.7, y+3.8, x-14, y+8.9,POINT_COLOR);
+  21   1              Gui_DrawLine(x-14, y+8.9, x-5.1, y+6.4,POINT_COLOR);
+  22   1              Gui_DrawLine(x-5.1, y+6.4, x-2.5, y+8.9,POINT_COLOR);
+  23   1              Gui_DrawLine(x-2.5, y+8.9, x-5.1, y+11.5,POINT_COLOR);
+  24   1              Gui_DrawLine(x-5.1, y+11.5, x-5.1, y+14,POINT_COLOR);
+  25   1              Gui_DrawLine(x-3.8, y+1.3, x-2.5, y+8.9,POINT_COLOR);
+  26   1              Gui_DrawLine(x, y-14, x, y+14,POINT_COLOR);
+  27   1              Gui_DrawLine(x, y-14, x+3.8, y-1.3,POINT_COLOR);
+  28   1              Gui_DrawLine(x+3.8, y-1.3, x+12.7,y+3.8,POINT_COLOR);
+  29   1              Gui_DrawLine(x+12.7, y+3.8, x+14, y+8.9,POINT_COLOR);
+  30   1              Gui_DrawLine(x+14, y+8.9, x+5.1, y+6.4,POINT_COLOR);
+  31   1              Gui_DrawLine(x+5.1, y+6.4, x+2.5, y+8.9,POINT_COLOR);
+  32   1              Gui_DrawLine(x+2.5, y+8.9, x+5.1, y+11.5,POINT_COLOR);
+  33   1              Gui_DrawLine(x+5.1, y+11.5, x+5.1, y+14,POINT_COLOR);
+  34   1              Gui_DrawLine(x+3.8, y+1.3, x+2.5, y+8.9,POINT_COLOR);
+  35   1              Gui_DrawLine(x-5.1, y+14, x+5.1, y+14,POINT_COLOR);
+  36   1              
+  37   1      }
+  38          
+  39          void draw_enemy_plane(int x ,int y){
+  40   1              Gui_DrawLine(x, y-4, x, y+8,POINT_COLOR);
+  41   1              Gui_DrawLine(x, y-4, x+4, y-8,POINT_COLOR);
+  42   1              Gui_DrawLine(x, y-4, x-4, y-8,POINT_COLOR);
+  43   1              Gui_DrawLine(x+4, y-8, x+8, y,POINT_COLOR);
+  44   1              Gui_DrawLine(x-4, y-8, x-8, y,POINT_COLOR);
+  45   1              Gui_DrawLine(x+8, y, x, y+8,POINT_COLOR);
+  46   1              Gui_DrawLine(x-8, y, x, y+8,POINT_COLOR);
+  47   1              Gui_DrawLine(x+4, y-8, x+4, y+4,POINT_COLOR);
+  48   1              Gui_DrawLine(x-4, y-8, x-4, y+4,POINT_COLOR);
+  49   1      }
+  50          
+  51          void draw_his_plane(int x, int y){
+  52   1              Gui_DrawLine(x, y+14, x-3.8, y+1.3,POINT_COLOR);
+  53   1              Gui_DrawLine(x-3.8, y+1.3, x-12.7,y-3.8,POINT_COLOR);
+C51 COMPILER V9.54   BASIC_DRAW                                                            04/19/2023 15:54:53 PAGE 2   
+
+  54   1              Gui_DrawLine(x-12.7, y-3.8, x-14, y-8.9,POINT_COLOR);
+  55   1              Gui_DrawLine(x-14, y-8.9, x-5.1, y-6.4,POINT_COLOR);
+  56   1              Gui_DrawLine(x-5.1, y-6.4, x-2.5, y-8.9,POINT_COLOR);
+  57   1              Gui_DrawLine(x-2.5, y-8.9, x-5.1, y-11.5,POINT_COLOR);
+  58   1              Gui_DrawLine(x-5.1, y-11.5, x-5.1, y-14,POINT_COLOR);
+  59   1              Gui_DrawLine(x-3.8, y-1.3, x-2.5, y-8.9,POINT_COLOR);
+  60   1              Gui_DrawLine(x, y+14, x, y-14,POINT_COLOR);
+  61   1              Gui_DrawLine(x, y+14, x+3.8, y+1.3,POINT_COLOR);
+  62   1              Gui_DrawLine(x+3.8, y+1.3, x+12.7,y-3.8,POINT_COLOR);
+  63   1              Gui_DrawLine(x+12.7, y-3.8, x+14, y-8.9,POINT_COLOR);
+  64   1              Gui_DrawLine(x+14, y-8.9, x+5.1, y-6.4,POINT_COLOR);
+  65   1              Gui_DrawLine(x+5.1, y-6.4, x+2.5, y-8.9,POINT_COLOR);
+  66   1              Gui_DrawLine(x+2.5, y-8.9, x+5.1, y-11.5,POINT_COLOR);
+  67   1              Gui_DrawLine(x+5.1, y-11.5, x+5.1, y-14,POINT_COLOR);
+  68   1              Gui_DrawLine(x+3.8, y-1.3, x+2.5, y-8.9,POINT_COLOR);
+  69   1              Gui_DrawLine(x-5.1, y-14, x+5.1, y-14,POINT_COLOR);
+  70   1      }
+  71          
+  72          void draw_boss(int x, int y){
+  73   1              Gui_DrawLine(x-4.4,y-17.6,x-8.8,y-22,POINT_COLOR);
+  74   1              Gui_DrawLine(x-8.8,y-22,x-22,y+17.6,POINT_COLOR);
+  75   1              Gui_DrawLine(x-22,y+17.6,x-17.6,y+22,POINT_COLOR);
+  76   1              Gui_DrawLine(x-17.6,y+22,x-10.3,y,POINT_COLOR);
+  77   1              Gui_DrawLine(x-4.4,y+13.2,x-10.3,y,POINT_COLOR);
+  78   1              Gui_DrawLine(x-8.8,y+4.4,x-4.4,y-8.8,POINT_COLOR);
+  79   1              Gui_DrawLine(x-4.4,y-8.8,x-8.8,y-4.4,POINT_COLOR);
+  80   1              Gui_DrawLine(x-8.8,y-4.4,x-4.4,y-17.6,POINT_COLOR);
+  81   1              Gui_DrawLine(x-2.2,y,x-2.2,y+8.8,POINT_COLOR);
+  82   1              Gui_DrawLine(x+4.4,y-17.6,x+8.8,y-22,POINT_COLOR);
+  83   1              Gui_DrawLine(x+8.8,y-22,x+22,y+17.6,POINT_COLOR);
+  84   1              Gui_DrawLine(x+22,y+17.6,x+17.6,y+22,POINT_COLOR);
+  85   1              Gui_DrawLine(x+17.6,y+22,x+10.3,y,POINT_COLOR);
+  86   1              Gui_DrawLine(x+4.4,y+13.2,x+10.3,y,POINT_COLOR);
+  87   1              Gui_DrawLine(x+8.8,y+4.4,x+4.4,y-8.8,POINT_COLOR);
+  88   1              Gui_DrawLine(x+4.4,y-8.8,x+8.8,y-4.4,POINT_COLOR);
+  89   1              Gui_DrawLine(x+8.8,y-4.4,x+4.4,y-17.6,POINT_COLOR);
+  90   1              Gui_DrawLine(x+2.2,y,x+2.2,y+8.8,POINT_COLOR);
+  91   1              Gui_DrawLine(x-4.4,y-8.8,x+4.4,y-8.8,POINT_COLOR);
+  92   1              Gui_DrawLine(x+2.2,y,x-2.2,y,POINT_COLOR);
+  93   1              Gui_DrawLine(x-2.2,y+8.8,x+2.2,y+8.8,POINT_COLOR);
+  94   1              Gui_DrawLine(x-4.4,y+13.2,x+4.4,y+13.2,POINT_COLOR);
+  95   1      
+  96   1      }
+  97          
+  98          
+  99          void draw_my_bullet(int x, int y){
+ 100   1              Gui_DrawPoint(x,y-1,POINT_COLOR);
+ 101   1              
+ 102   1              Gui_DrawPoint(x-1,y,POINT_COLOR);
+ 103   1              Gui_DrawPoint(x,y,POINT_COLOR);
+ 104   1              Gui_DrawPoint(x+1,y,POINT_COLOR);
+ 105   1      
+ 106   1              Gui_DrawPoint(x-1,y+1,POINT_COLOR);
+ 107   1              Gui_DrawPoint(x,y+1,POINT_COLOR);
+ 108   1              Gui_DrawPoint(x+1,y+1,POINT_COLOR);
+ 109   1      }
+ 110          
+ 111          void draw_enemy_bullet(int x, int y){
+ 112   1              Gui_DrawPoint(x-1,y-1,POINT_COLOR);
+ 113   1              Gui_DrawPoint(x,y-1,POINT_COLOR);
+ 114   1              Gui_DrawPoint(x+1,y-1,POINT_COLOR);
+ 115   1              
+C51 COMPILER V9.54   BASIC_DRAW                                                            04/19/2023 15:54:53 PAGE 3   
+
+ 116   1              Gui_DrawPoint(x-1,y,POINT_COLOR);
+ 117   1              Gui_DrawPoint(x,y,POINT_COLOR);
+ 118   1              Gui_DrawPoint(x+1,y,POINT_COLOR);
+ 119   1      
+ 120   1              Gui_DrawPoint(x,y+1,POINT_COLOR);
+ 121   1      }
+ 122          
+ 123          void draw_cross(int x, int y){
+ 124   1              Gui_DrawLine(x-cross_width/2,y-cross_height/2, x+cross_width/2,y+cross_height/2,POINT_COLOR);
+ 125   1              Gui_DrawLine(x-cross_width/2,y+cross_height/2, x+cross_width/2,y-cross_height/2,POINT_COLOR);
+ 126   1      }
+ 127          
+ 128          void draw_heart(int x, int y){
+ 129   1              Gui_DrawLine(x-heart_width/2,y-heart_height/2, x+heart_width/2,y+heart_height/2,POINT_COLOR);
+ 130   1              Gui_DrawLine(x-heart_width/2,y+heart_height/2, x+heart_width/2,y-heart_height/2,POINT_COLOR);
+ 131   1              
+ 132   1              Gui_DrawLine(x-heart_width/2,y, x+heart_width/2,y,POINT_COLOR);
+ 133   1              Gui_DrawLine(x,y+heart_height/2, x,y-heart_height/2,POINT_COLOR);
+ 134   1      }
+ 135          
+ 136          
+ 137          void draw_star(int x,int y){
+ 138   1              //竖向较长
+ 139   1              Gui_DrawLine(x,y-star_height/2, x,y+star_height/2,POINT_COLOR);
+ 140   1              //横向较短
+ 141   1              Gui_DrawLine(x-star_width/2,y, x+star_width/2,y,POINT_COLOR);
+ 142   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =  10339    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =     16      36
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

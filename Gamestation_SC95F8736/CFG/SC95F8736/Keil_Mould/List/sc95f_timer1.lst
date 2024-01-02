@@ -1,0 +1,256 @@
+C51 COMPILER V9.01   SC95F_TIMER1                                                          09/07/2020 16:59:33 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE SC95F_TIMER1
+OBJECT MODULE PLACED IN ..\Output\sc95f_timer1.obj
+COMPILER INVOKED BY: E:\Keil\C51\BIN\C51.EXE ..\FWLib\SC95F_Lib\src\sc95f_timer1.c OMF2 BROWSE INCDIR(..\FWLib\SC95F_Lib
+                    -\inc;..\User) DEFINE(SC95F8x2x) DEBUG PRINT(..\List\sc95f_timer1.lst) OBJECT(..\Output\sc95f_timer1.obj)
+
+line level    source
+
+   1          //************************************************************
+   2          //  Copyright (c) 深圳市赛元微电子有限公司
+   3          //      文件名称        : sc95f_timer1.c
+   4          //      作者            : 
+   5          //      模块功能        : TIMER1固件库函数C文件
+   6          //      局部函数列表:
+   7          //  最后更正日期: 2020/8/13
+   8          //      版本            : V1.0 
+   9          //  说明        ：该文件仅适用于SC95Fxx1x、SC95Fxx2x系列芯片  
+  10          //*************************************************************
+  11          
+  12          
+  13          #include "sc95f_timer1.h"
+  14          
+  15          /**************************************************
+  16          *函数名称：void TIM1_DeInit(void)
+  17          *函数功能：TIMER1相关寄存器复位至缺省值
+  18          *入口参数：void
+  19          *出口参数：void
+  20          **************************************************/
+  21          void TIM1_DeInit(void)
+  22          {
+  23   1              TMOD &= 0X0F;
+  24   1              TCON &= 0X37;
+  25   1              TMCON &= 0XFD;
+  26   1              TH1 = 0X00;
+  27   1              TL1 = 0X00;
+  28   1              ET1 = 0;
+  29   1              IPT1 = 0;
+  30   1      }
+  31          
+  32          /**************************************************
+  33          *函数名称：void TIM1_TimeBaseInit(TIM1_PresSel_TypeDef TIM1_PrescalerSelection, TIM1_CountMode_TypeDef TIM
+             -1_CountMode)
+  34          *函数功能：TIMER1基本设置配置函数
+  35          *入口参数：TIM1_PrescalerSelection      预分频选择
+  36                             TIM1_CountMode                       计数/定时模式选择
+  37          *出口参数：void
+  38          **************************************************/
+  39          void TIM1_TimeBaseInit(TIM1_PresSel_TypeDef TIM1_PrescalerSelection,TIM1_CountMode_TypeDef TIM1_CountMode)
+  40          {
+  41   1              if(TIM1_PrescalerSelection == TIM1_PRESSEL_FSYS_D12)
+  42   1              {
+  43   2                      TMCON &= 0xFD;
+  44   2              }
+  45   1              else if(TIM1_PrescalerSelection == TIM1_PRESSEL_FSYS_D1)
+  46   1              {
+  47   2                      TMCON |= 0x02;
+  48   2              }
+  49   1      /************************************************************/
+  50   1              if(TIM1_CountMode == TIM1_MODE_TIMER)
+  51   1              {
+  52   2                      TMOD &= 0xBF;           
+  53   2              }
+C51 COMPILER V9.01   SC95F_TIMER1                                                          09/07/2020 16:59:33 PAGE 2   
+
+  54   1              else if(TIM1_CountMode == TIM1_MODE_COUNTER)
+  55   1              {
+  56   2                      TMOD |= 0x40;
+  57   2              }       
+  58   1      }
+  59          
+  60          /**************************************************
+  61          *函数名称：void TIM1_WorkMode0Config(uint16_t TIM1_SetCounter)
+  62          *函数功能：TIMER1工作模式0配置函数
+  63          *入口参数：uint16_t TIM1_SetCounter     配置计数初值
+  64          *出口参数：void
+  65          **************************************************/
+  66          void TIM1_WorkMode0Config(uint16_t TIM1_SetCounter)
+  67          {
+  68   1              TMOD &= 0XCF;
+  69   1              TL1 = (uint8_t)TIM1_SetCounter;
+  70   1              TH1 = (TIM1_SetCounter >> 5);           
+  71   1      }
+  72          
+  73          /**************************************************
+  74          *函数名称：void TIM1_WorkMode1Config(uint16_t TIM1_SetCounter)
+  75          *函数功能：TIMER1工作模式1配置函数
+  76          *入口参数：uint16_t TIM1_SetCounter     配置计数初值
+  77          *出口参数：void
+  78          **************************************************/
+  79          void TIM1_WorkMode1Config(uint16_t TIM1_SetCounter)
+  80          {
+  81   1              TMOD &= 0XCF;
+  82   1              TMOD |= 0X10;
+  83   1              TL1 = TIM1_SetCounter % 256;
+  84   1              TH1 = TIM1_SetCounter / 256;
+  85   1      }
+  86          
+  87          /**************************************************
+  88          *函数名称：void TIM1_WorkMode2Config(uint8_t TIM1_SetCounter)
+  89          *函数功能：TIMER1工作模式2配置函数
+  90          *入口参数：uint8_t TIM1_SetCounter      配置计数初值
+  91          *出口参数：void
+  92          **************************************************/
+  93          void TIM1_WorkMode2Config(uint8_t TIM1_SetCounter)
+  94          {
+  95   1              TMOD &= 0XCF;
+  96   1              TMOD |= 0X20;
+  97   1              TL1 = TIM1_SetCounter;
+  98   1              TH1 = TIM1_SetCounter;
+  99   1      }
+ 100          
+ 101          /**************************************************
+ 102          *函数名称：void TIM1_WorkModeConfig(TIM1_WorkMode_TypeDef TIM1_WorkMode, uint16_t TIM1_SetCounter)
+ 103          *函数功能：TIMER1工作模式配置函数
+ 104          *入口参数：TIM1_WorkMode_TypeDef TIM1_WorkMode  TIMER1工作模式选择
+ 105                             uint16_t TIM1_SetCounter                     TIMER1计数初值配置      
+ 106          *出口参数：void
+ 107          **************************************************/
+ 108          void TIM1_WorkModeConfig(TIM1_WorkMode_TypeDef TIM1_WorkMode, uint16_t TIM1_SetCounter)
+ 109          {       
+ 110   1              switch (TIM1_WorkMode)
+ 111   1              {
+ 112   2                      case TIM1_WORK_MODE0:
+ 113   2                              TIM1_WorkMode0Config(TIM1_SetCounter);
+ 114   2                      break;
+ 115   2      
+C51 COMPILER V9.01   SC95F_TIMER1                                                          09/07/2020 16:59:33 PAGE 3   
+
+ 116   2                      case TIM1_WORK_MODE1:
+ 117   2                              TIM1_WorkMode1Config(TIM1_SetCounter);
+ 118   2                      break;
+ 119   2      
+ 120   2                      case TIM1_WORK_MODE2:
+ 121   2                              TIM1_WorkMode2Config(TIM1_SetCounter);
+ 122   2                      break;
+ 123   2      
+ 124   2                      default:
+ 125   2                      break;
+ 126   2              }               
+ 127   1      }
+ 128          
+ 129          /**************************************************
+ 130          *函数名称：void TIM1_Mode0SetReloadCounter(uint16_t TIM1_SetCounter)
+ 131          *函数功能：TIMER1工作模式0初值重载函数
+ 132          *入口参数：uint16_t TIM1_SetCounter     配置TIMER1重载值        
+ 133          *出口参数：void
+ 134          **************************************************/
+ 135          void TIM1_Mode0SetReloadCounter(uint16_t TIM1_SetCounter)
+ 136          {
+ 137   1              TL1 = (uint8_t)TIM1_SetCounter;
+ 138   1              TH1 = (TIM1_SetCounter >> 5);   
+ 139   1      }
+ 140          
+ 141          /**************************************************
+ 142          *函数名称：void TIM1_Mode1SetReloadCounter(uint16_t TIM1_SetCounter)
+ 143          *函数功能：TIMER1工作模式1初值重载函数
+ 144          *入口参数：uint16_t TIM1_SetCounter     配置TIMER1重载值        
+ 145          *出口参数：void
+ 146          **************************************************/
+ 147          void TIM1_Mode1SetReloadCounter(uint16_t TIM1_SetCounter)
+ 148          {
+ 149   1              TL1 = TIM1_SetCounter % 256;
+ 150   1              TH1 = TIM1_SetCounter / 256;    
+ 151   1      }
+ 152          
+ 153          /*****************************************************
+ 154          *函数名称：void TIM1_Cmd(FunctionalState NewState)
+ 155          *函数功能：TIMER1功能开关函数
+ 156          *入口参数：FunctionalState NewState     功能启动/关闭选择
+ 157          *出口参数：void
+ 158          *****************************************************/
+ 159          void TIM1_Cmd(FunctionalState NewState)
+ 160          {
+ 161   1              if (NewState == DISABLE)
+ 162   1          {
+ 163   2             TR1 = 0;
+ 164   2          }
+ 165   1          else
+ 166   1          {
+ 167   2             TR1 = 1;
+ 168   2          }
+ 169   1      }
+ 170          
+ 171          /*****************************************************
+ 172          *函数名称：void TIM1_ITConfig(FunctionalState NewState, PriorityStatus Priority)
+ 173          *函数功能：TIMER1中断初始化
+ 174          *入口参数：FunctionalState NewState     中断使能/关闭选择
+ 175                             PriorityStatus Priority      中断优先级选择
+ 176          *出口参数：void
+ 177          *****************************************************/
+C51 COMPILER V9.01   SC95F_TIMER1                                                          09/07/2020 16:59:33 PAGE 4   
+
+ 178          void TIM1_ITConfig(FunctionalState NewState, PriorityStatus Priority)
+ 179          {
+ 180   1          if(NewState == DISABLE)
+ 181   1          {
+ 182   2             ET1 = 0;
+ 183   2          }
+ 184   1          else
+ 185   1          {
+ 186   2             ET1 = 1;
+ 187   2          }
+ 188   1      /************************************************************/
+ 189   1              if(Priority == LOW)
+ 190   1              {
+ 191   2                      IPT1 = 0;
+ 192   2              }
+ 193   1              else
+ 194   1              {
+ 195   2                      IPT1 = 1;
+ 196   2              }
+ 197   1      }
+ 198          
+ 199          /*****************************************************
+ 200          *函数名称：FlagStatus TIM1_GetFlagStatus(void)
+ 201          *函数功能：获得TIMER1中断标志状态
+ 202          *入口参数：void
+ 203          *出口参数：FlagStatus   TIMER1中断标志状态      
+ 204          *****************************************************/
+ 205          FlagStatus TIM1_GetFlagStatus(void)
+ 206          {
+ 207   1              return TF1;
+ 208   1      }
+ 209          
+ 210          /*****************************************************
+ 211          *函数名称：void TIM1_ClearFlag(void)
+ 212          *函数功能：清除TIMER1中断标志状态
+ 213          *入口参数：void
+ 214          *出口参数：void 
+ 215          *****************************************************/
+ 216          void TIM1_ClearFlag(void)
+ 217          {
+ 218   1              TF1 = 0;
+ 219   1      }
+ 220          
+ 221          /******************* (C) COPYRIGHT 2020 SinOne Microelectronics *****END OF FILE****/
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    178    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

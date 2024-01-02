@@ -1,0 +1,190 @@
+C51 COMPILER V9.54   RUN2                                                                  04/19/2023 15:54:54 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE RUN2
+OBJECT MODULE PLACED IN ..\Output\run2.obj
+COMPILER INVOKED BY: D:\Keil5\C51\BIN\C51.EXE ..\Bank2\run2.c LARGE OBJECTADVANCED OPTIMIZE(8,SIZE) BROWSE INCDIR(..\FWL
+                    -ib\SC95F_Lib\inc;..\User;..\Bank1;..\Bank2;..\Bank3) DEFINE(SC95F8x3x) DEBUG PRINT(..\List\run2.lst) OBJECT(..\Output\ru
+                    -n2.obj)
+
+line level    source
+
+   1          #include "run2.h"
+   2          #include "Lcd_Driver.h"
+   3          #include "GUI.h"
+   4          #include "stdlib.h" 
+   5          #include "Key.h"
+   6          
+   7          int left_limit2 = 0;
+   8          int right_limit2= 128;
+   9          int up_limit2 = 42;
+  10          int down_limit2 = 128;
+  11          
+  12          //根据按键更改飞机姿态
+  13          void switch_both_act(int8_t my_plane[2],int8_t my_buttles[10][2],int8_t his_plane[2],int8_t his_buttles[10
+             -][2]){
+  14   1              int i=0;
+  15   1              int key2 = KEY_Scan(1);
+  16   1              //清除之前所画
+  17   1              Lcd_Clearsome(my_plane[0]-16,my_plane[1]-16,my_plane[0]+16,my_plane[1]+16,BACK_COLOR);
+  18   1              Lcd_Clearsome(his_plane[0]-16,his_plane[1]-16,his_plane[0]+16,his_plane[1]+16,BACK_COLOR);
+  19   1              switch(key2)
+  20   1                      {
+  21   2                              // right
+  22   2                              case R_PRES:
+  23   2                                      if(my_plane[0]+10 < right_limit2 - 15)
+  24   2                                      {
+  25   3                                              my_plane[0] = my_plane[0]+10;
+  26   3                                      }
+  27   2                                      UART0_SendData8(R_PRES);
+  28   2                                      break;
+  29   2                              
+  30   2                              //left
+  31   2                              case L_PRES:
+  32   2                                      if(my_plane[0]-10 > left_limit2 + 15)
+  33   2                                      {
+  34   3                                              my_plane[0] = my_plane[0]-10;
+  35   3                                      }
+  36   2                                      UART0_SendData8(L_PRES);
+  37   2                                      break;
+  38   2                              
+  39   2                              // attack
+  40   2                              case KEY_X_PRES:                                
+  41   2                                      for(i=0; i<10; i++)
+  42   2                                      {
+  43   3                                              if(my_buttles[i][0] == 0)
+  44   3                                              {
+  45   4                                                      my_buttles[i][0] = my_plane[0];
+  46   4                                                      my_buttles[i][1] = my_plane[1]-15;
+  47   4                                                      break;  
+  48   4                                              }
+  49   3                                      }
+  50   2                                      UART0_SendData8(KEY_X_PRES);
+  51   2                                      break;
+  52   2                              default:
+C51 COMPILER V9.54   RUN2                                                                  04/19/2023 15:54:54 PAGE 2   
+
+  53   2                                      UART0_SendData8(8); //不是设定的任何一种按键
+  54   2                                      break;                  
+  55   2                      } 
+  56   1              switch(rev_key)
+  57   1                      {
+  58   2                              // right
+  59   2                              case R_PRES:
+  60   2                                      if(his_plane[0]+10 < right_limit2 - 15)
+  61   2                                      {
+  62   3                                              his_plane[0] = his_plane[0]+10;
+  63   3                                      }
+  64   2                                      break;
+  65   2                              
+  66   2                              //left
+  67   2                              case L_PRES:
+  68   2                                      if(his_plane[0]-10 > left_limit2 + 15)
+  69   2                                      {
+  70   3                                              his_plane[0] = his_plane[0]-10;
+  71   3                                      }
+  72   2                                      break;
+  73   2                              
+  74   2                              // attack
+  75   2                              case KEY_X_PRES:                                
+  76   2                                      for(i=0; i<10; i++)
+  77   2                                      {
+  78   3                                              if(his_buttles[i][0] == 0)
+  79   3                                              {
+  80   4                                                      his_buttles[i][0] = his_plane[0];
+  81   4                                                      his_buttles[i][1] = his_plane[1]+15;
+  82   4                                                      break;  
+  83   4                                              }
+  84   3                                      }
+  85   2                                      break;
+  86   2                              default:
+  87   2                                      break;                  
+  88   2                      } 
+  89   1      }
+  90          
+  91          void update_both_buttles(int8_t my_buttles[10][2],int8_t his_buttles[10][2]){
+  92   1              int i=0;        
+  93   1              for(i=0; i<10; i++){
+  94   2                      if(my_buttles[i][0] != 0){
+  95   3                              //清除之前所画
+  96   3                              Lcd_Clearsome(my_buttles[i][0]-3,my_buttles[i][1]-3,my_buttles[i][0]+3,my_buttles[i][1]+3,BACK_COLOR);
+  97   3                              
+  98   3                              my_buttles[i][1] = my_buttles[i][1] - 3;
+  99   3                              
+ 100   3                              //当到达边界时销毁
+ 101   3                              if(my_buttles[i][1] < 18){                              
+ 102   4                                      my_buttles[i][0] = 0;
+ 103   4                                      my_buttles[i][1] = 0;
+ 104   4                              }
+ 105   3                      }
+ 106   2              }
+ 107   1              
+ 108   1              for(i=0; i<10; i++){
+ 109   2                      if(his_buttles[i][0] != 0){
+ 110   3                              //清除之前所画
+ 111   3                              Lcd_Clearsome(his_buttles[i][0]-3,his_buttles[i][1]-3,his_buttles[i][0]+3,his_buttles[i][1]+3,BACK_COLO
+             -R);
+ 112   3                              
+ 113   3                              his_buttles[i][1] = his_buttles[i][1] + 3;
+C51 COMPILER V9.54   RUN2                                                                  04/19/2023 15:54:54 PAGE 3   
+
+ 114   3                              
+ 115   3                              //当到达边界时销毁
+ 116   3                              if(his_buttles[i][1] > 110){                            
+ 117   4                                      his_buttles[i][0] = 0;
+ 118   4                                      his_buttles[i][1] = 0;
+ 119   4                              }
+ 120   3                      }
+ 121   2              }
+ 122   1              
+ 123   1      }
+ 124          
+ 125          int check_my_buttles_to_his_plane_collide(int8_t my_buttles[10][2], int8_t his_plane[2]){
+ 126   1              int j=0;
+ 127   1      
+ 128   1              for(j=0; j<10; j++){
+ 129   2              //碰撞检测
+ 130   2              if(abs(my_buttles[j][0] - his_plane[0]) <= 15){
+ 131   3                      if(abs(my_buttles[j][1] - his_plane[1]) <= 15){
+ 132   4                              my_buttles[j][0] = 0;
+ 133   4                              my_buttles[j][1] = 0;
+ 134   4                              return 1;
+ 135   4                              }
+ 136   3                      }
+ 137   2              }
+ 138   1              return 0;
+ 139   1      }
+ 140          
+ 141          int check_his_buttles_to_my_plane_collide(int8_t his_buttles[10][2], int8_t my_plane[2]){
+ 142   1              int j=0;
+ 143   1              
+ 144   1              for(j=0; j<10; j++){
+ 145   2              //碰撞检测
+ 146   2              if(abs(his_buttles[j][0] - my_plane[0]) <= 15){
+ 147   3                      if(abs(his_buttles[j][1] - my_plane[1]) <= 15){
+ 148   4                              his_buttles[j][0] = 0;
+ 149   4                              his_buttles[j][1] = 0;
+ 150   4                              return 1;
+ 151   4                              }
+ 152   3                      }
+ 153   2              }
+ 154   1              return 0;
+ 155   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   2040    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      8      40
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

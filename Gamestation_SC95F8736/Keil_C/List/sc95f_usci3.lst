@@ -1,0 +1,892 @@
+C51 COMPILER V9.54   SC95F_USCI3                                                           04/19/2023 15:54:51 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE SC95F_USCI3
+OBJECT MODULE PLACED IN ..\Output\sc95f_usci3.obj
+COMPILER INVOKED BY: D:\Keil5\C51\BIN\C51.EXE ..\FWLib\SC95F_Lib\src\sc95f_usci3.c LARGE OBJECTADVANCED OPTIMIZE(8,SIZE)
+                    - BROWSE INCDIR(..\FWLib\SC95F_Lib\inc;..\User;..\Bank1;..\Bank2;..\Bank3) DEFINE(SC95F8x3x) DEBUG PRINT(..\List\sc95f_us
+                    -ci3.lst) OBJECT(..\Output\sc95f_usci3.obj)
+
+line level    source
+
+   1          //************************************************************
+   2          //  Copyright (c) 
+   3          //      文件名称:               sc95f_USCI3.c
+   4          //      作者:
+   5          //      模块功能:               USCI3固件库函数C文件
+   6          //  最后更正日期: 2022/01/07
+   7          //      版本:                           V1.10005
+   8          //  说明:                                       该文件仅适用于SC95F系列芯片
+   9          //*************************************************************
+  10          
+  11          #include "sc95f_USCI3.h"
+  12          
+  13          #if defined(SC95F8x3x) || defined(SC95F7x3x) || defined (SC95F8x6x) || defined (SC95F7x6x)  || defined (SC
+             -95F8x1xB) || defined (SC95F7x1xB)\
+  14                           || defined (SC95R751) || defined (SC95F7619B)
+  15          #if defined(SC95F8x3x) || defined(SC95F7x3x) 
+  16          void USCI3_DeInit(void)
+  17          {
+  18   1        USXINX &= 0xF8;
+  19   1        USXINX |= 0X03;
+  20   1        TMCON &= 0XCF;
+  21   1        USXCON0 = 0X00;
+  22   1        USXCON1 = 0X00;
+  23   1        USXCON2 = 0X00;
+  24   1        USXCON3 = 0X00;
+  25   1        IE2 &= (~0X04);
+  26   1        IP2 &= (~0X04);
+  27   1      }
+  28          
+  29          /**************************************************
+  30          *函数名称:void USCI3_SPI_Init(USCI3_SPI_FirstBit_TypeDef FirstBit, USCI3_SPI_BaudRatePrescaler_TypeDef Bau
+             -dRatePrescaler,USCI3_SPI_Mode_TypeDef Mode,
+  31                                                                   USCI3_SPI_ClockPolarity_TypeDef ClockPolarity, USCI3_SPI_ClockPhase_TypeDef ClockPhase,USCI3_SPI_T
+             -XE_INT_TypeDef SPI_TXE_INT,USCI3_TransmissionMode_TypeDef TransmissionMode)
+  32          *函数功能:SPI初始化配置函数
+  33          *入口参数:
+  34          USCI3_SPI_FirstBit_TypeDef:FirstBit:优先传送位选择（MSB/LSB）
+  35          USCI3_SPI_BaudRatePrescaler_TypeDef:BaudRatePrescaler:SPI时钟频率选择
+  36          USCI3_SPI_Mode_TypeDef:Mode:SPI工作模式选择
+  37          USCI3_SPI_ClockPolarity_TypeDef:ClockPolarity:SPI时钟极性选择
+  38          USCI3_SPI_ClockPhase_TypeDef:ClockPhase:SPI时钟相位选择
+  39          USCI3_SPI_TXE_INT_TypeDef:SPI_TXE_INT:发送缓存器中断允许选择,该功能在SC95FXX1X芯片上无效
+  40          USCI3_TransmissionMode_TypeDef:TransmissionMode:SPI传输模式选择 8/16位
+  41          *出口参数:void
+  42          **************************************************/
+  43          void USCI3_SPI_Init(USCI3_SPI_FirstBit_TypeDef FirstBit,
+  44                              USCI3_SPI_BaudRatePrescaler_TypeDef BaudRatePrescaler, USCI3_SPI_Mode_TypeDef Mode,
+  45                              USCI3_SPI_ClockPolarity_TypeDef ClockPolarity, USCI3_SPI_ClockPhase_TypeDef ClockPhase
+             -,
+  46                              USCI3_SPI_TXE_INT_TypeDef SPI_TXE_INT, USCI3_TransmissionMode_TypeDef TransmissionMode
+             -)
+  47          {
+  48   1        USXINX &= 0xF8;
+C51 COMPILER V9.54   SC95F_USCI3                                                           04/19/2023 15:54:51 PAGE 2   
+
+  49   1        USXINX |= 0X03;
+  50   1        TMCON = (TMCON & 0XCF) | 0x10;
+  51   1        USXCON1 = USXCON1 & (~0X05) | FirstBit | SPI_TXE_INT | TransmissionMode;
+  52   1        USXCON0 = USXCON0 & 0X80 | BaudRatePrescaler | Mode | ClockPolarity | ClockPhase;
+  53   1      }
+  54          
+  55          /**************************************************
+  56          *函数名称:void USCI3_TransmissionMode(USCI3_TransmissionMode_TypeDef TransmissionMode)
+  57          *函数功能:SPI 传输模式配置函数
+  58          *入口参数:
+  59          USCI3_TransmissionMode_TypeDef:TransmissionMode:SPI传输模式选择 8/16e位
+  60          *出口参数:void
+  61          **************************************************/
+  62          void USCI3_TransmissionMode(USCI3_TransmissionMode_TypeDef TransmissionMode)
+  63          {
+  64   1        USXINX &= 0xF8;
+  65   1        USXINX |= 0X03;
+  66   1        TMCON = (TMCON & 0XCF) | 0x10;
+  67   1        if (TransmissionMode == USCI3_SPI_DATA8)
+  68   1        {
+  69   2          USXCON1 &= 0xFD;
+  70   2        }
+  71   1        else
+  72   1        {
+  73   2          USXCON1 |= 0x02;
+  74   2        }
+  75   1      }
+  76          
+  77          /*****************************************************
+  78          *函数名称:void USCI3_SPI_Cmd(FunctionalState NewState)
+  79          *函数功能:SPI功能开关函数
+  80          *入口参数:
+  81          FunctionalState:NewState:功能启动/关闭选择
+  82          *出口参数:void
+  83          *****************************************************/
+  84          void USCI3_SPI_Cmd(FunctionalState NewState)
+  85          {
+  86   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+  87   1        USXINX |= 0X03;
+  88   1        TMCON = (TMCON & 0XCF) | 0x10;
+  89   1      
+  90   1        if (NewState != DISABLE)
+  91   1        {
+  92   2          USXCON0 |= 0X80;
+  93   2        }
+  94   1        else
+  95   1        {
+  96   2          USXCON0 &= (~0X80);
+  97   2        }
+  98   1      }
+  99          
+ 100          #else
+              void USCI3_DeInit(void)
+              {
+                USXINX &= 0xF8;
+                USXINX |= 0X03;
+                TMCON &= 0X3F;
+                USXCON0 = 0X00;
+                USXCON1 = 0X00;
+                USXCON2 = 0X00;
+                USXCON3 = 0X00;
+                IE2 &= (~0X04);
+C51 COMPILER V9.54   SC95F_USCI3                                                           04/19/2023 15:54:51 PAGE 3   
+
+                IP2 &= (~0X04);
+              }
+              
+              /**************************************************
+              *函数名称:void USCI3_SPI_Init(USCI3_SPI_FirstBit_TypeDef FirstBit, USCI3_SPI_BaudRatePrescaler_TypeDef Bau
+             -dRatePrescaler,USCI3_SPI_Mode_TypeDef Mode,
+                                                                       USCI3_SPI_ClockPolarity_TypeDef ClockPolarity, USCI3_SPI_ClockPhase_TypeDef ClockPhase,USCI3_SPI_T
+             -XE_INT_TypeDef SPI_TXE_INT,USCI3_TransmissionMode_TypeDef TransmissionMode)
+              *函数功能:SPI初始化配置函数
+              *入口参数:
+              USCI3_SPI_FirstBit_TypeDef:FirstBit:优先传送位选择（MSB/LSB）
+              USCI3_SPI_BaudRatePrescaler_TypeDef:BaudRatePrescaler:SPI时钟频率选择
+              USCI3_SPI_Mode_TypeDef:Mode:SPI工作模式选择
+              USCI3_SPI_ClockPolarity_TypeDef:ClockPolarity:SPI时钟极性选择
+              USCI3_SPI_ClockPhase_TypeDef:ClockPhase:SPI时钟相位选择
+              USCI3_SPI_TXE_INT_TypeDef:SPI_TXE_INT:发送缓存器中断允许选择,该功能在SC95FXX1X芯片上无效
+              USCI3_TransmissionMode_TypeDef:TransmissionMode:SPI传输模式选择 8/16位
+              *出口参数:void
+              **************************************************/
+              void USCI3_SPI_Init(USCI3_SPI_FirstBit_TypeDef FirstBit,
+                                  USCI3_SPI_BaudRatePrescaler_TypeDef BaudRatePrescaler, USCI3_SPI_Mode_TypeDef Mode,
+                                  USCI3_SPI_ClockPolarity_TypeDef ClockPolarity, USCI3_SPI_ClockPhase_TypeDef ClockPhase
+             -,
+                                  USCI3_SPI_TXE_INT_TypeDef SPI_TXE_INT, USCI3_TransmissionMode_TypeDef TransmissionMode
+             -)
+              {
+                USXINX &= 0xF8;
+                USXINX |= 0X03;
+                TMCON = (TMCON & 0X3F) | 0X40;
+                      
+                USXCON1 = USXCON1 & (~0X05) | FirstBit | SPI_TXE_INT | TransmissionMode;
+                USXCON0 = USXCON0 & 0X80 | BaudRatePrescaler | Mode | ClockPolarity | ClockPhase;
+              }
+              
+              /**************************************************
+              *函数名称:void USCI3_TransmissionMode(USCI3_TransmissionMode_TypeDef TransmissionMode)
+              *函数功能:SPI 传输模式配置函数
+              *入口参数:
+              USCI3_TransmissionMode_TypeDef:TransmissionMode:SPI传输模式选择 8/16e位
+              *出口参数:void
+              **************************************************/
+              void USCI3_TransmissionMode(USCI3_TransmissionMode_TypeDef TransmissionMode)
+              {
+                USXINX &= 0xF8;
+                USXINX |= 0X03;
+                TMCON = (TMCON & 0X3F) | 0X40;
+                      
+                if (TransmissionMode == USCI3_SPI_DATA8)
+                {
+                  USXCON1 &= 0xFD;
+                }
+                else
+                {
+                  USXCON1 |= 0x02;
+                }
+              }
+              
+              /*****************************************************
+              *函数名称:void USCI3_SPI_Cmd(FunctionalState NewState)
+              *函数功能:SPI功能开关函数
+              *入口参数:
+              FunctionalState:NewState:功能启动/关闭选择
+C51 COMPILER V9.54   SC95F_USCI3                                                           04/19/2023 15:54:51 PAGE 4   
+
+              *出口参数:void
+              *****************************************************/
+              void USCI3_SPI_Cmd(FunctionalState NewState)
+              {
+                USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+                USXINX |= 0X03;
+                TMCON = (TMCON & 0X3F) | 0X40;
+              
+                if (NewState != DISABLE)
+                {
+                  USXCON0 |= 0X80;
+                }
+                else
+                {
+                  USXCON0 &= (~0X80);
+                }
+              }
+              
+              #endif
+ 188          
+ 189          /*****************************************************
+ 190          *函数名称:void USCI3_SPI_SendData_8(uint8_t Data)
+ 191          *函数功能:USCI3 SPI发送数据
+ 192          *入口参数:
+ 193          uint8_t:Data:发送的数据
+ 194          *出口参数:void
+ 195          *****************************************************/
+ 196          void USCI3_SPI_SendData_8(uint8_t Data)
+ 197          {
+ 198   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+ 199   1        USXINX |= 0X03;
+ 200   1        USXCON2 = Data;
+ 201   1      }
+ 202          
+ 203          /*****************************************************
+ 204          *函数名称:uint8_t USCI3_SPI_ReceiveData_8(void)
+ 205          *函数功能:获得USXCON2中的值
+ 206          *入口参数:void
+ 207          *出口参数:
+ 208          uint8_t:接收的数据
+ 209          *****************************************************/
+ 210          uint8_t USCI3_SPI_ReceiveData_8(void)
+ 211          {
+ 212   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+ 213   1        USXINX |= 0X03;
+ 214   1        return USXCON2;
+ 215   1      }
+ 216          
+ 217          /*****************************************************
+ 218          *函数名称:void USCI3_SPI_SendData_16(uint16_t Data)
+ 219          *函数功能:USXCON2 SPI发送数据
+ 220          *入口参数:
+ 221          uint16_t:Data:发送的数据
+ 222          *出口参数:void
+ 223          *****************************************************/
+ 224          void USCI3_SPI_SendData_16(uint16_t Data)
+ 225          {
+ 226   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+ 227   1        USXINX |= 0X03;
+ 228   1        USXCON3 = (uint8_t)(Data >> 8);
+ 229   1        USXCON2 = (uint8_t)Data;
+ 230   1      }
+C51 COMPILER V9.54   SC95F_USCI3                                                           04/19/2023 15:54:51 PAGE 5   
+
+ 231          
+ 232          /*****************************************************
+ 233          *函数名称:uint16_t USCI3_SPI_ReceiveData_16(void)
+ 234          *函数功能:获得USXCON2中的值
+ 235          *入口参数:void
+ 236          *出口参数:
+ 237          uint16_t:接收的数据
+ 238          *****************************************************/
+ 239          uint16_t USCI3_SPI_ReceiveData_16(void)
+ 240          {
+ 241   1        uint16_t SPI_data;
+ 242   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+ 243   1        USXINX |= 0X03;
+ 244   1        SPI_data = (uint16_t)((USXCON3 << 8) | USXCON2);
+ 245   1        return SPI_data;
+ 246   1      }
+ 247          
+ 248          #if defined(SC95F8x3x) || defined(SC95F7x3x) 
+ 249          /**************************************************
+ 250          *函数名称:void USCI3_TWI_Slave_Init(uint8_t TWI_Address)
+ 251          *函数功能:USCI3 TWI 从机初始化配置函数
+ 252          *入口参数:
+ 253          uint8_t:TWI_Address:TWI作为从机时的7位从机地址
+ 254          *出口参数:void
+ 255          **************************************************/
+ 256          void USCI3_TWI_Slave_Init(uint8_t TWI_Address)
+ 257          {
+ 258   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+ 259   1        USXINX |= 0X03;
+ 260   1        TMCON = (TMCON & 0XCF) | 0x20;
+ 261   1        USXCON2 = TWI_Address << 1;
+ 262   1      }
+ 263          
+ 264          /**************************************************
+ 265          *函数名称:void USCI3_TWI_MasterCommunicationRate(USCI3_TWI_MasterCommunicationRate_TypeDef TWI_MasterCommu
+             -nicationRate)
+ 266          *函数功能:USCI3 TWI主机模式下通讯速率设定
+ 267          *入口参数:
+ 268          USCI3_TWI_MasterCommunicationRate_TypeDef:TWI_MasterCommunicationRate:TWI主机模式下通讯速率
+ 269          *出口参数:void
+ 270          **************************************************/
+ 271          void USCI3_TWI_MasterCommunicationRate(USCI3_TWI_MasterCommunicationRate_TypeDef
+ 272                                                     TWI_MasterCommunicationRate)
+ 273          {
+ 274   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+ 275   1        USXINX |= 0X03;
+ 276   1        TMCON = (TMCON & 0XCF) | 0x20;
+ 277   1      
+ 278   1        USXCON1 = TWI_MasterCommunicationRate;
+ 279   1      }
+ 280          
+ 281          /**************************************************
+ 282          *函数名称:void USCI3_TWI_SlaveClockExtension(void)
+ 283          *函数功能:USCI3 TWI从机模式时钟延长功能位
+ 284          *入口参数:void
+ 285          *出口参数:void
+ 286          **************************************************/
+ 287          void USCI3_TWI_SlaveClockExtension(FunctionalState NewState)
+ 288          {
+ 289   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+ 290   1        USXINX |= 0X03;
+ 291   1        TMCON = (TMCON & 0XCF) | 0x20;
+C51 COMPILER V9.54   SC95F_USCI3                                                           04/19/2023 15:54:51 PAGE 6   
+
+ 292   1      
+ 293   1        if (NewState != DISABLE)
+ 294   1        {
+ 295   2          USXCON1 |= 0x40;
+ 296   2        }
+ 297   1        else
+ 298   1        {
+ 299   2          USXCON1 &= 0XBF;
+ 300   2        }
+ 301   1      }
+ 302          
+ 303          /**************************************************
+ 304          *函数名称:void USCI3_TWI_AcknowledgeConfig(FunctionalState NewState)
+ 305          *函数功能:TWI接收应答使能函数
+ 306          *入口参数:
+ 307          FunctionalState:NewState:接收应答使能/失能选择
+ 308          *出口参数:void
+ 309          **************************************************/
+ 310          void USCI3_TWI_AcknowledgeConfig(FunctionalState NewState)
+ 311          {
+ 312   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+ 313   1        USXINX |= 0X03;
+ 314   1        TMCON = (TMCON & 0XCF) | 0x20;
+ 315   1      
+ 316   1        if (NewState != DISABLE)
+ 317   1        {
+ 318   2          USXCON0 |= 0X08;
+ 319   2        }
+ 320   1        else
+ 321   1        {
+ 322   2          USXCON0 &= 0XF7;
+ 323   2        }
+ 324   1      }
+ 325          
+ 326          /**************************************************
+ 327          *函数名称:void USCI3_TWI_GeneralCallCmd(FunctionalState NewState)
+ 328          *函数功能:TWI通用地址响应使能函数
+ 329          *入口参数:
+ 330          FunctionalState:NewState:通用地址响应使能/失能选择
+ 331          *出口参数:void
+ 332          **************************************************/
+ 333          void USCI3_TWI_GeneralCallCmd(FunctionalState NewState)
+ 334          {
+ 335   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+ 336   1        USXINX |= 0X03;
+ 337   1        TMCON = (TMCON & 0XCF) | 0x20;
+ 338   1      
+ 339   1        if (NewState != DISABLE)
+ 340   1        {
+ 341   2          USXCON2 |= 0X01;
+ 342   2        }
+ 343   1        else
+ 344   1        {
+ 345   2          USXCON2 &= 0XFE;
+ 346   2        }
+ 347   1      }
+ 348          
+ 349          /*****************************************************
+ 350          *函数名称:void USCI3_TWI_Cmd(FunctionalState NewState)
+ 351          *函数功能:TWI功能开关函数
+ 352          *入口参数:
+ 353          FunctionalState:NewState:功能启动/关闭选择
+C51 COMPILER V9.54   SC95F_USCI3                                                           04/19/2023 15:54:51 PAGE 7   
+
+ 354          *出口参数:void
+ 355          *****************************************************/
+ 356          void USCI3_TWI_Cmd(FunctionalState NewState)
+ 357          {
+ 358   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+ 359   1        USXINX |= 0X03;
+ 360   1        TMCON = (TMCON & 0XCF) | 0x20;
+ 361   1      
+ 362   1        if (NewState != DISABLE)
+ 363   1        {
+ 364   2          USXCON0 |= 0X80;
+ 365   2        }
+ 366   1        else
+ 367   1        {
+ 368   2          USXCON0 &= (~0X80);
+ 369   2        }
+ 370   1      }
+ 371          
+ 372          #else
+              
+              /**************************************************
+              *函数名称:void USCI3_TWI_Slave_Init(uint8_t TWI_Address)
+              *函数功能:USCI3 TWI 从机初始化配置函数
+              *入口参数:
+              uint8_t:TWI_Address:TWI作为从机时的7位从机地址
+              *出口参数:void
+              **************************************************/
+              void USCI3_TWI_Slave_Init(uint8_t TWI_Address)
+              {
+                USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+                USXINX |= 0X03;
+                TMCON = (TMCON & 0X3F) | 0X80;
+                USXCON2 = TWI_Address << 1;
+              }
+              
+              /**************************************************
+              *函数名称:void USCI3_TWI_MasterCommunicationRate(USCI3_TWI_MasterCommunicationRate_TypeDef TWI_MasterCommu
+             -nicationRate)
+              *函数功能:USCI3 TWI主机模式下通讯速率设定
+              *入口参数:
+              USCI3_TWI_MasterCommunicationRate_TypeDef:TWI_MasterCommunicationRate:TWI主机模式下通讯速率
+              *出口参数:void
+              **************************************************/
+              void USCI3_TWI_MasterCommunicationRate(USCI3_TWI_MasterCommunicationRate_TypeDef
+                                                         TWI_MasterCommunicationRate)
+              {
+                USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+                USXINX |= 0X03;
+                TMCON = (TMCON & 0X3F) | 0X80;
+                USXCON1 = TWI_MasterCommunicationRate;
+              }
+              
+              /**************************************************
+              *函数名称:void USCI3_TWI_SlaveClockExtension(void)
+              *函数功能:USCI3 TWI从机模式时钟延长功能位
+              *入口参数:void
+              *出口参数:void
+              **************************************************/
+              void USCI3_TWI_SlaveClockExtension(FunctionalState NewState)
+              {
+                USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+                USXINX |= 0X03;
+C51 COMPILER V9.54   SC95F_USCI3                                                           04/19/2023 15:54:51 PAGE 8   
+
+                TMCON = (TMCON & 0X3F) | 0X80;
+              
+                if (NewState != DISABLE)
+                {
+                  USXCON1 |= 0x40;
+                }
+                else
+                {
+                  USXCON1 &= 0XBF;
+                }
+              }
+              
+              /**************************************************
+              *函数名称:void USCI3_TWI_AcknowledgeConfig(FunctionalState NewState)
+              *函数功能:TWI接收应答使能函数
+              *入口参数:
+              FunctionalState:NewState:接收应答使能/失能选择
+              *出口参数:void
+              **************************************************/
+              void USCI3_TWI_AcknowledgeConfig(FunctionalState NewState)
+              {
+                USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+                USXINX |= 0X03;
+                TMCON = (TMCON & 0X3F) | 0X80;
+              
+                if (NewState != DISABLE)
+                {
+                  USXCON0 |= 0X08;
+                }
+                else
+                {
+                  USXCON0 &= 0XF7;
+                }
+              }
+              
+              /**************************************************
+              *函数名称:void USCI3_TWI_GeneralCallCmd(FunctionalState NewState)
+              *函数功能:TWI通用地址响应使能函数
+              *入口参数:
+              FunctionalState:NewState:通用地址响应使能/失能选择
+              *出口参数:void
+              **************************************************/
+              void USCI3_TWI_GeneralCallCmd(FunctionalState NewState)
+              {
+                USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+                USXINX |= 0X03;
+                TMCON = (TMCON & 0X3F) | 0X80;
+              
+                if (NewState != DISABLE)
+                {
+                  USXCON2 |= 0X01;
+                }
+                else
+                {
+                  USXCON2 &= 0XFE;
+                }
+              }
+              
+              /*****************************************************
+              *函数名称:void USCI3_TWI_Cmd(FunctionalState NewState)
+              *函数功能:TWI功能开关函数
+              *入口参数:
+C51 COMPILER V9.54   SC95F_USCI3                                                           04/19/2023 15:54:51 PAGE 9   
+
+              FunctionalState:NewState:功能启动/关闭选择
+              *出口参数:void
+              *****************************************************/
+              void USCI3_TWI_Cmd(FunctionalState NewState)
+              {
+                USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+                USXINX |= 0X03;
+                TMCON = (TMCON & 0X3F) | 0X80;
+              
+                if (NewState != DISABLE)
+                {
+                  USXCON0 |= 0X80;
+                }
+                else
+                {
+                  USXCON0 &= (~0X80);
+                }
+              }
+              
+              #endif
+ 497          
+ 498          /**************************************************
+ 499          *函数名称:void USCI3_TWI_Start(void)
+ 500          *函数功能:USCI3 TWI 起始位
+ 501          *入口参数:void
+ 502          *出口参数:void
+ 503          **************************************************/
+ 504          void USCI3_TWI_Start(void)
+ 505          {
+ 506   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+ 507   1        USXINX |= 0X03;
+ 508   1        USXCON1 |= 0x20;
+ 509   1      }
+ 510          
+ 511          /**************************************************
+ 512          *函数名称:void USCI3_TWI_MasterModeStop(void)
+ 513          *函数功能:USCI3 TWI主机模式停止位
+ 514          *入口参数:void
+ 515          *出口参数:void
+ 516          **************************************************/
+ 517          void USCI3_TWI_MasterModeStop(void)
+ 518          {
+ 519   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+ 520   1        USXINX |= 0X03;
+ 521   1        USXCON1 |= 0x10;
+ 522   1      }
+ 523          
+ 524          /*****************************************************
+ 525          *函数名称:FlagStatus USCI3_GetTWIStatus(USCI3_TWIState_TypeDef USCI3_TWIState)
+ 526          *函数功能:读取TWI状态
+ 527          *入口参数:
+ 528          USCI3_TWIState_TypeDef:USCI3_TWIState:TWI状态类型
+ 529          *出口参数:
+ 530          FlagStatus:USCI3_TWI标志状态    
+ 531          *****************************************************/
+ 532          FlagStatus USCI3_GetTWIStatus(USCI3_TWIState_TypeDef USCI3_TWIState)
+ 533          {
+ 534   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+ 535   1        USXINX |= 0X03;
+ 536   1        if ((USXCON0 & 0x07) == USCI3_TWIState)
+ 537   1          return SET;
+ 538   1        else
+C51 COMPILER V9.54   SC95F_USCI3                                                           04/19/2023 15:54:51 PAGE 10  
+
+ 539   1          return RESET;
+ 540   1      }
+ 541          
+ 542          /*****************************************************
+ 543          *函数名称:void USCI3_TWI_SendData(uint8_t Data)
+ 544          *函数功能:TWI发送数据
+ 545          *入口参数:
+ 546          uint8_t:Data:发送的数据/地址
+ 547          *出口参数:void
+ 548          *****************************************************/
+ 549          void USCI3_TWI_SendData(uint8_t Data)
+ 550          {
+ 551   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+ 552   1        USXINX |= 0X03;
+ 553   1        USXCON3 = Data;
+ 554   1      }
+ 555          
+ 556          /*****************************************************
+ 557          *函数名称:void USCI3_TWI_SendAddr(uint8_t Addr,USCI3_TWI_RWType RW)
+ 558          *函数功能:TWI发送地址，读写类型
+ 559          *入口参数:
+ 560          uint8_t:Addr:发送的地址
+ 561          USCI3_TWI_RWType:RW:读写类型
+ 562          *出口参数:void
+ 563          *****************************************************/
+ 564          void USCI3_TWI_SendAddr(uint8_t Addr, USCI3_TWI_RWType RW)
+ 565          {
+ 566   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+ 567   1        USXINX |= 0X03;
+ 568   1        USXCON3 = (Addr << 1) | RW;
+ 569   1      }
+ 570          
+ 571          /*****************************************************
+ 572          *函数名称:uint8_t USCI3_TWI_SendData(void)
+ 573          *函数功能:获得USXCON3中的值
+ 574          *入口参数:void
+ 575          *出口参数:
+ 576          uint8_t:接收的数据
+ 577          *****************************************************/
+ 578          uint8_t USCI3_TWI_ReceiveData(void)
+ 579          {
+ 580   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+ 581   1        USXINX |= 0X03;
+ 582   1        return USXCON3;
+ 583   1      }
+ 584          
+ 585          /**************************************************
+ 586          *函数名称:void USCI3_UART_Init(uint32_t UARTFsys, uint32_t BaudRate, USCI3_UART_Mode_TypeDef Mode, USCI3_U
+             -ART_RX_TypeDef RxMode)
+ 587          *函数功能:UART初始化配置函数
+ 588          *入口参数:
+ 589          uint32_t:UARTFsys:系统时钟频率
+ 590          uint32_t:BaudRate:波特率
+ 591          USCI3_UART_Mode_TypeDef:Mode:UART工作模式
+ 592          USCI3_UART_RX_TypeDef:RxMode:接收允许选择
+ 593          *出口参数:void
+ 594          **************************************************/
+ 595          #if defined(SC95F8x3x) || defined(SC95F7x3x)
+ 596          void USCI3_UART_Init(uint32_t UARTFsys, uint32_t BaudRate, USCI3_UART_Mode_TypeDef Mode,
+ 597                               USCI3_UART_RX_TypeDef RxMode)
+ 598          {
+ 599   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+C51 COMPILER V9.54   SC95F_USCI3                                                           04/19/2023 15:54:51 PAGE 11  
+
+ 600   1        USXINX |= 0X03;
+ 601   1        TMCON = (TMCON & 0XCF) | 0x30;
+ 602   1        USXCON0 = USXCON0 & 0X0F | Mode | RxMode;
+ 603   1      
+ 604   1        if (Mode == USCI3_UART_Mode_8B)
+ 605   1        {
+ 606   2          if (BaudRate == USCI3_UART_BaudRate_FsysDIV12)
+ 607   2          {
+ 608   3            USXCON0 &= 0XDF;
+ 609   3          }
+ 610   2          else if (BaudRate == USCI3_UART_BaudRate_FsysDIV4)
+ 611   2          {
+ 612   3            USXCON0 |= 0X20;
+ 613   3          }
+ 614   2        }
+ 615   1        else
+ 616   1        {
+ 617   2          USXCON2 = UARTFsys / BaudRate / 256;
+ 618   2          USXCON1 = UARTFsys / BaudRate % 256;
+ 619   2        }
+ 620   1      }
+ 621          
+ 622          #else
+              void USCI3_UART_Init(uint32_t UARTFsys, uint32_t BaudRate, USCI3_UART_Mode_TypeDef Mode,
+                                   USCI3_UART_RX_TypeDef RxMode)
+              {
+                USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+                USXINX |= 0X03;
+                TMCON = (TMCON & 0X3F) | 0XC0;
+                USXCON0 = USXCON0 & 0X0F | Mode | RxMode;
+              
+                if (Mode == USCI3_UART_Mode_8B)
+                {
+                  if (BaudRate == USCI3_UART_BaudRate_FsysDIV12)
+                  {
+                    USXCON0 &= 0XDF;
+                  }
+                  else if (BaudRate == USCI3_UART_BaudRate_FsysDIV4)
+                  {
+                    USXCON0 |= 0X20;
+                  }
+                }
+                else
+                {
+                  USXCON2 = UARTFsys / BaudRate / 256;
+                  USXCON1 = UARTFsys / BaudRate % 256;
+                }
+              }
+              
+              #endif
+ 650          
+ 651          /*****************************************************
+ 652          *函数名称:void USCI3_UART_SendData8(uint8_t Data)
+ 653          *函数功能:USCI3 UART发送8位数据
+ 654          *入口参数:
+ 655          uint8_t:Data:发送的数据
+ 656          *出口参数:void
+ 657          *****************************************************/
+ 658          void USCI3_UART_SendData8(uint8_t Data)
+ 659          {
+ 660   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+ 661   1        USXINX |= 0X03;
+C51 COMPILER V9.54   SC95F_USCI3                                                           04/19/2023 15:54:51 PAGE 12  
+
+ 662   1        USXCON3 = Data;
+ 663   1      }
+ 664          
+ 665          /*****************************************************
+ 666          *函数名称:uint8_t USCI3_UART_ReceiveData8(void)
+ 667          *函数功能:获得USXCON3中的值
+ 668          *入口参数:void
+ 669          *出口参数:
+ 670          uint8_t:接收的数据
+ 671          *****************************************************/
+ 672          uint8_t USCI3_UART_ReceiveData8(void)
+ 673          {
+ 674   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+ 675   1        USXINX |= 0X03;
+ 676   1        return USXCON3;
+ 677   1      }
+ 678          
+ 679          /*****************************************************
+ 680          *函数名称:void USCI3_UART_SendData9(uint16_t Data)
+ 681          *函数功能:UART发送9位数据
+ 682          *入口参数:
+ 683          uint16_t:Data:发送的数据
+ 684          *出口参数:void
+ 685          *****************************************************/
+ 686          void USCI3_UART_SendData9(uint16_t Data)
+ 687          {
+ 688   1        uint8_t Data_9Bit;
+ 689   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+ 690   1        USXINX |= 0X03;
+ 691   1      
+ 692   1        Data_9Bit = (Data >> 8);
+ 693   1      
+ 694   1        if (Data_9Bit)
+ 695   1        {
+ 696   2          USXCON0 |= 0x08;
+ 697   2        }
+ 698   1        else
+ 699   1        {
+ 700   2          USXCON0 &= 0xf7;
+ 701   2        }
+ 702   1      
+ 703   1        USXCON3 = (uint8_t)Data;
+ 704   1      }
+ 705          
+ 706          /*****************************************************
+ 707          *函数名称:uint16_t USCI3_UART_ReceiveData9(void)
+ 708          *函数功能:获得USXCON3中的值及第九位的值
+ 709          *入口参数:void
+ 710          *出口参数:
+ 711          uint16_t:接收的数据
+ 712          *****************************************************/
+ 713          uint16_t USCI3_UART_ReceiveData9(void)
+ 714          {
+ 715   1        uint16_t Data9;
+ 716   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+ 717   1        USXINX |= 0X03;
+ 718   1      
+ 719   1        Data9 = USXCON3 + ((uint16_t)(USXCON0 & 0X04) << 6);
+ 720   1        return Data9;
+ 721   1      }
+ 722          
+ 723          /*****************************************************
+C51 COMPILER V9.54   SC95F_USCI3                                                           04/19/2023 15:54:51 PAGE 13  
+
+ 724          *函数名称:void USCI3_ITConfig(FunctionalState NewState, PriorityStatus Priority)
+ 725          *函数功能:USCI3中断初始化
+ 726          *入口参数:
+ 727          FunctionalState:NewState:中断使能/关闭选择
+ 728          PriorityStatus:Priority:中断优先级选择
+ 729          *出口参数:void
+ 730          *****************************************************/
+ 731          void USCI3_ITConfig(FunctionalState NewState, PriorityStatus Priority)
+ 732          {
+ 733   1        if (NewState != DISABLE)
+ 734   1        {
+ 735   2          IE2 |= 0x04;
+ 736   2        }
+ 737   1        else
+ 738   1        {
+ 739   2          IE2 &= 0xFB;
+ 740   2        }
+ 741   1      
+ 742   1        /************************************************************/
+ 743   1        if (Priority != LOW)
+ 744   1        {
+ 745   2          IP2 |= 0x04;
+ 746   2        }
+ 747   1        else
+ 748   1        {
+ 749   2          IP2 &= 0xFB;
+ 750   2        }
+ 751   1      }
+ 752          
+ 753          /*****************************************************
+ 754          *函数名称:FlagStatus USCI3_GetFlagStatus(USCI3_Flag_TypeDef USCI3_FLAG)
+ 755          *函数功能:获得USCI3标志状态
+ 756          *入口参数:
+ 757          USCI3_Flag_Typedef:USCI3_Flag:中断标志位选择
+ 758          *出口参数:
+ 759          FlagStatus:USCI3标志状态
+ 760          *****************************************************/
+ 761          FlagStatus USCI3_GetFlagStatus(USCI3_Flag_TypeDef USCI3_FLAG)
+ 762          {
+ 763   1        FlagStatus bitstatus = RESET;
+ 764   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+ 765   1        USXINX |= 0X03;
+ 766   1        if ((USCI3_FLAG == USCI3_SPI_FLAG_SPIF) || (USCI3_FLAG == USCI3_SPI_FLAG_WCOL) || (USCI3_FLAG == USCI3_S
+             -PI_FLAG_TXE) || (USCI3_FLAG == USCI3_TWI_FLAG_TXRXnE))
+ 767   1        {
+ 768   2          if ((USCI3_FLAG & USXCON1) != (uint8_t)RESET)
+ 769   2          {
+ 770   3            bitstatus = SET;
+ 771   3          }
+ 772   2          else
+ 773   2          {
+ 774   3            bitstatus = RESET;
+ 775   3          }
+ 776   2        }
+ 777   1        else
+ 778   1        {
+ 779   2          if ((USCI3_FLAG & USXCON0) != (uint8_t)RESET)
+ 780   2          {
+ 781   3            bitstatus = SET;
+ 782   3          }
+ 783   2          else
+ 784   2          {
+C51 COMPILER V9.54   SC95F_USCI3                                                           04/19/2023 15:54:51 PAGE 14  
+
+ 785   3            bitstatus = RESET;
+ 786   3          }
+ 787   2        }
+ 788   1      
+ 789   1        return bitstatus;
+ 790   1      }
+ 791          
+ 792          /*****************************************************
+ 793          *函数名称:void USCI3_ClearFlag(USCI3_Flag_TypeDef USCI3_FLAG)
+ 794          *函数功能:清除USCI3标志状态
+ 795          *入口参数:
+ 796          USCI3_Flag_TypeDef:USCI3_FLAG:所需清除的标志位
+ 797          *出口参数:void
+ 798          *****************************************************/
+ 799          void USCI3_ClearFlag(USCI3_Flag_TypeDef USCI3_FLAG)
+ 800          {
+ 801   1        USXINX &= 0xF8; //把USCIX寄存器指向USCI3
+ 802   1        USXINX |= 0X03;
+ 803   1        if ((USCI3_FLAG == USCI3_SPI_FLAG_SPIF) || (USCI3_FLAG == USCI3_SPI_FLAG_WCOL) || (USCI3_FLAG == USCI3_S
+             -PI_FLAG_TXE) || (USCI3_FLAG == USCI3_TWI_FLAG_TXRXnE))
+ 804   1        {
+ 805   2          USXCON1 &= (~USCI3_FLAG); //操作寄存器USXCON1
+ 806   2        }
+ 807   1        else if ((USCI3_FLAG == USCI3_UART_FLAG_TI) || (USCI3_FLAG == USCI3_UART_FLAG_RI))
+ 808   1        {
+ 809   2      #if defined(SC95F8x3x) || defined(SC95F7x3x)
+ 810   2          USXCON0 = USXCON0  & 0xFC | USCI3_FLAG; //写1清零
+ 811   2      #else
+                  USXCON0 &= (~USCI3_FLAG); //写0清零
+              #endif
+ 814   2        }
+ 815   1        else
+ 816   1        {
+ 817   2          USXCON0 &= (~USCI3_FLAG); //操作寄存器USXCON0
+ 818   2        }
+ 819   1      }
+ 820          
+ 821          /******************* (C) COPYRIGHT 2020 SinOne Microelectronics *****END OF FILE****/
+ 822          
+ 823          #endif
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    792    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----      17
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

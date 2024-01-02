@@ -1,0 +1,17 @@
+COMMON {"..\Output\main.obj"},
+COMMON {"..\Output\SC_Init.obj"},
+COMMON {"..\Output\SC_it.obj"},
+COMMON {"..\Output\SysFunVarDefine.obj"},
+COMMON {"..\Output\sc95f_gpio.obj"},
+COMMON {"..\Output\sc95f_option.obj"},
+COMMON {"..\Output\STARTUP.obj"},
+COMMON {"..\Output\L51_BANK.obj"},
+BANK1 {"..\Output\bank1_work.obj"},
+BANK2 {"..\Output\bank2_work.obj"},
+BANK3 {"..\Output\bank3_work.obj"} 
+TO "..\Output\project name" 
+BankArea (0x008000, 0x00FFFF) 
+PRINT("..\List\project name.map") REMOVEUNUSED 
+CLASSES (CODE(C:0X100),
+CONST(C:0X100)) 
+SEGMENTS ( ?CO?BANK3_WORK(B3:0x8000),?CO?BANK2_WORK(B2:0x8000),?CO?BANK1_WORK(B1:0x8000) ) 

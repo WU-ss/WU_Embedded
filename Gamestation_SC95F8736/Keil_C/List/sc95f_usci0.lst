@@ -1,0 +1,780 @@
+C51 COMPILER V9.54   SC95F_USCI0                                                           04/19/2023 15:54:52 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE SC95F_USCI0
+OBJECT MODULE PLACED IN ..\Output\sc95f_usci0.obj
+COMPILER INVOKED BY: D:\Keil5\C51\BIN\C51.EXE ..\FWLib\SC95F_Lib\src\sc95f_usci0.c LARGE OBJECTADVANCED OPTIMIZE(8,SIZE)
+                    - BROWSE INCDIR(..\FWLib\SC95F_Lib\inc;..\User;..\Bank1;..\Bank2;..\Bank3) DEFINE(SC95F8x3x) DEBUG PRINT(..\List\sc95f_us
+                    -ci0.lst) OBJECT(..\Output\sc95f_usci0.obj)
+
+line level    source
+
+   1          //************************************************************
+   2          //  Copyright (c) 
+   3          //      文件名称:                       sc95f_usci0.c
+   4          //      作者:                                   赛元应用团队
+   5          //      模块功能:                       USCI0固件库函数C文件
+   6          //  最后更正日期:       2022年7月20日
+   7          //      版本:                           V1.10006
+   8          //  说明:                               该文件仅适用于SC95F系列芯片
+   9          //*************************************************************
+  10          
+  11          #include "sc95f_usci0.h"
+  12          
+  13          #if !defined (SC95R751) && !defined (SC95F7610B)
+  14          /**************************************************
+  15          *函数名称:void USCI0_DeInit(void)
+  16          *函数功能:USCI0相关寄存器复位至缺省值
+  17          *入口参数:void
+  18          *出口参数:void
+  19          **************************************************/
+  20          void USCI0_DeInit(void)
+  21          {
+  22   1        OTCON &= 0XCF;
+  23   1        US0CON0 = 0X00;
+  24   1        US0CON1 = 0X00;
+  25   1        US0CON2 = 0X00;
+  26   1        US0CON3 = 0X00;
+  27   1        IE1 &= (~0X01);
+  28   1        IP1 &= (~0X01);
+  29   1      }
+  30          
+  31          /**************************************************
+  32          *函数名称:void USCI0_SPI_Init(USCI0_SPI_FirstBit_TypeDef FirstBit, USCI0_SPI_BaudRatePrescaler_TypeDef Bau
+             -dRatePrescaler,USCI0_SPI_Mode_TypeDef Mode,
+  33                                                                   USCI0_SPI_ClockPolarity_TypeDef ClockPolarity, USCI0_SPI_ClockPhase_TypeDef ClockPhase,USCI0_SPI_T
+             -XE_INT_TypeDef SPI_TXE_INT,USCI0_TransmissionMode_TypeDef TransmissionMode)
+  34          *函数功能:SPI初始化配置函数
+  35          *入口参数:
+  36          USCI0_SPI_FirstBit_TypeDef:FirstBit:优先传送位选择（MSB/LSB）
+  37          USCI0_SPI_BaudRatePrescaler_TypeDef:BaudRatePrescaler:SPI时钟频率选择
+  38          USCI0_SPI_Mode_TypeDef:Mode:SPI工作模式选择
+  39          USCI0_SPI_ClockPolarity_TypeDef:ClockPolarity:SPI时钟极性选择
+  40          USCI0_SPI_ClockPhase_TypeDef:ClockPhase:SPI时钟相位选择
+  41          USCI0_SPI_TXE_INT_TypeDef:SPI_TXE_INT:发送缓存器中断允许选择,该功能在SC95FXX1X芯片上无效
+  42          USCI0_TransmissionMode_TypeDef:TransmissionMode:SPI传输模式选择 8/16位
+  43          *出口参数:void
+  44          **************************************************/
+  45          void USCI0_SPI_Init(USCI0_SPI_FirstBit_TypeDef FirstBit,
+  46                              USCI0_SPI_BaudRatePrescaler_TypeDef BaudRatePrescaler, USCI0_SPI_Mode_TypeDef Mode,
+  47                              USCI0_SPI_ClockPolarity_TypeDef ClockPolarity, USCI0_SPI_ClockPhase_TypeDef ClockPhase
+             -,
+  48                              USCI0_SPI_TXE_INT_TypeDef SPI_TXE_INT, USCI0_TransmissionMode_TypeDef TransmissionMode
+             -)
+  49          {
+C51 COMPILER V9.54   SC95F_USCI0                                                           04/19/2023 15:54:52 PAGE 2   
+
+  50   1      
+  51   1        OTCON = (OTCON & 0XCF) | 0X10;
+  52   1      #if defined(SC95F8x1x) || defined(SC95F7x1x) || defined(SC95FWxx)
+                SPI_TXE_INT = USCI0_SPI_TXE_DISINT; //SPI_TXE_INT该功能在SC95FXX1X芯片上无效
+                US0CON1 = US0CON1 & (~0X05) | FirstBit | TransmissionMode;
+              #endif
+  56   1      #if defined(SC95F8x2x) || defined(SC95F7x2x) || defined(SC95F8x3x) || defined(SC95F7x3x) || defined (SC95F
+             -8x6x) || defined (SC95F7x6x)\
+  57   1                      || defined (SC95F8x1xB) || defined (SC95F7x1xB) || defined (SC95F7619B)
+  58   1        US0CON1 = US0CON1 & (~0X05) | FirstBit | SPI_TXE_INT | TransmissionMode;
+  59   1      #endif
+  60   1        US0CON0 = US0CON0 & 0X80 | BaudRatePrescaler | Mode | ClockPolarity | ClockPhase;
+  61   1      }
+  62          
+  63          /**************************************************
+  64          *函数名称:void USCI0_TransmissionMode(USCI0_TransmissionMode_TypeDef TransmissionMode)
+  65          *函数功能:SPI 传输模式配置函数
+  66          *入口参数:
+  67          USCI0_TransmissionMode_TypeDef:TransmissionMode:SPI传输模式选择 8/16e位
+  68          *出口参数:void
+  69          **************************************************/
+  70          void USCI0_TransmissionMode(USCI0_TransmissionMode_TypeDef TransmissionMode)
+  71          {
+  72   1        if (TransmissionMode == USCI0_SPI_DATA8)
+  73   1        {
+  74   2          US0CON1 &= 0xFD;
+  75   2        }
+  76   1        else
+  77   1        {
+  78   2          US0CON1 |= 0x02;
+  79   2        }
+  80   1      }
+  81          
+  82          /*****************************************************
+  83          *函数名称:void USCI0_SPI_Cmd(FunctionalState NewState)
+  84          *函数功能:SPI功能开关函数
+  85          *入口参数:
+  86          FunctionalState:NewState:功能启动/关闭选择
+  87          *出口参数:void
+  88          *****************************************************/
+  89          void USCI0_SPI_Cmd(FunctionalState NewState)
+  90          {
+  91   1        OTCON = (OTCON & 0XCF) | 0X10;
+  92   1      
+  93   1        if (NewState != DISABLE)
+  94   1        {
+  95   2          US0CON0 |= 0X80;
+  96   2        }
+  97   1        else
+  98   1        {
+  99   2          US0CON0 &= (~0X80);
+ 100   2        }
+ 101   1      }
+ 102          /*****************************************************
+ 103          *函数名称:void USCI0_SPI_SendData_8(uint8_t Data)
+ 104          *函数功能:USCI0 SPI发送数据
+ 105          *入口参数:
+ 106          uint8_t:Data:发送的数据
+ 107          *出口参数:void
+ 108          *****************************************************/
+ 109          void USCI0_SPI_SendData_8(uint8_t Data)
+ 110          {
+C51 COMPILER V9.54   SC95F_USCI0                                                           04/19/2023 15:54:52 PAGE 3   
+
+ 111   1        US0CON2 = Data;
+ 112   1      }
+ 113          
+ 114          /*****************************************************
+ 115          *函数名称:uint8_t USCI0_SPI_ReceiveData_8(void)
+ 116          *函数功能:获得US0CON2中的值
+ 117          *入口参数:void
+ 118          *出口参数:
+ 119          uint8_t:接收到的数据
+ 120          *****************************************************/
+ 121          uint8_t USCI0_SPI_ReceiveData_8(void)
+ 122          {
+ 123   1        return US0CON2;
+ 124   1      }
+ 125          
+ 126          /*****************************************************
+ 127          *函数名称:void USCI0_SPI_SendData_16(uint16_t Data)
+ 128          *函数功能:US0CON2 SPI发送数据
+ 129          *入口参数:
+ 130          uint16_t:Data:发送的数据
+ 131          *出口参数:void
+ 132          *****************************************************/
+ 133          void USCI0_SPI_SendData_16(uint16_t Data)
+ 134          {
+ 135   1        US0CON3 = (uint8_t)(Data >> 8);
+ 136   1        US0CON2 = (uint8_t)Data;
+ 137   1      }
+ 138          
+ 139          /*****************************************************
+ 140          *函数名称:uint16_t USCI0_SPI_ReceiveData_16(void)
+ 141          *函数功能:获得US0CON2中的值
+ 142          *入口参数:void
+ 143          *出口参数:
+ 144          uint16_t:接收的数据
+ 145          *****************************************************/
+ 146          uint16_t USCI0_SPI_ReceiveData_16(void)
+ 147          {
+ 148   1        uint16_t SPI_data;
+ 149   1        SPI_data = (uint16_t)((US0CON3 << 8) | US0CON2);
+ 150   1        return SPI_data;
+ 151   1      }
+ 152          
+ 153          /**************************************************
+ 154          *函数名称:void USCI0_TWI_Slave_Init(uint8_t TWI_Address)
+ 155          *函数功能:USCI0 TWI从机初始化配置函数
+ 156          *入口参数:
+ 157          uint8_t:TWI_Address:TWI作为从机时的7位从机地址
+ 158          *出口参数:void
+ 159          **************************************************/
+ 160          void USCI0_TWI_Slave_Init(uint8_t TWI_Address)
+ 161          {
+ 162   1        OTCON = OTCON & 0XCF | 0X20;
+ 163   1        US0CON2 = TWI_Address << 1;
+ 164   1      }
+ 165          
+ 166          /**************************************************
+ 167          *函数名称:void USCI0_TWI_MasterCommunicationRate(USCI0_TWI_MasterCommunicationRate_TypeDef TWI_MasterCommu
+             -nicationRate)
+ 168          *函数功能:USCI0 TWI主机模式下通讯速率设定
+ 169          *入口参数:
+ 170          USCI0_TWI_MasterCommunicationRate_TypeDef:TWI_MasterCommunicationRate:TWI主机模式下通讯速率
+ 171          *出口参数:void
+C51 COMPILER V9.54   SC95F_USCI0                                                           04/19/2023 15:54:52 PAGE 4   
+
+ 172          **************************************************/
+ 173          void USCI0_TWI_MasterCommunicationRate(USCI0_TWI_MasterCommunicationRate_TypeDef
+ 174                                                     TWI_MasterCommunicationRate)
+ 175          {
+ 176   1        OTCON = OTCON & 0XCF | 0X20;
+ 177   1        US0CON1 |= TWI_MasterCommunicationRate;
+ 178   1      }
+ 179          
+ 180          /**************************************************
+ 181          *函数名称:void USCI0_TWI_Start(void)
+ 182          *函数功能:USCI0 TWI 起始位
+ 183          *入口参数:void
+ 184          *出口参数:void
+ 185          **************************************************/
+ 186          void USCI0_TWI_Start(void)
+ 187          {
+ 188   1        US0CON1 |= 0x20;
+ 189   1      }
+ 190          
+ 191          /**************************************************
+ 192          *函数名称:void USCI0_TWI_MasterModeStop(void)
+ 193          *函数功能:USCI0 TWI主机模式停止位
+ 194          *入口参数:void
+ 195          *出口参数:void
+ 196          **************************************************/
+ 197          void USCI0_TWI_MasterModeStop(void)
+ 198          {
+ 199   1        US0CON1 |= 0x10;
+ 200   1      }
+ 201          
+ 202          /**************************************************
+ 203          *函数名称:void USCI0_TWI_SlaveClockExtension(void)
+ 204          *函数功能:USCI0 TWI从机模式时钟延长功能位
+ 205          *入口参数:
+ 206          FunctionalState:NewState:功能启动/关闭选择
+ 207          *出口参数:void
+ 208          **************************************************/
+ 209          void USCI0_TWI_SlaveClockExtension(FunctionalState NewState)
+ 210          {
+ 211   1        OTCON = OTCON & 0XCF | 0X20;
+ 212   1      
+ 213   1        if (NewState != DISABLE)
+ 214   1        {
+ 215   2          US0CON1 |= 0x40;
+ 216   2        }
+ 217   1        else
+ 218   1        {
+ 219   2          US0CON1 &= 0XBF;
+ 220   2        }
+ 221   1      }
+ 222          
+ 223          /**************************************************
+ 224          *函数名称:void USCI0_TWI_AcknowledgeConfig(FunctionalState NewState)
+ 225          *函数功能:TWI接收应答使能函数
+ 226          *入口参数:
+ 227          FunctionalState:NewState:接收应答使能/失能选择
+ 228          *出口参数:void
+ 229          **************************************************/
+ 230          void USCI0_TWI_AcknowledgeConfig(FunctionalState NewState)
+ 231          {
+ 232   1        OTCON = OTCON & 0XCF | 0X20;
+ 233   1      
+C51 COMPILER V9.54   SC95F_USCI0                                                           04/19/2023 15:54:52 PAGE 5   
+
+ 234   1        if (NewState != DISABLE)
+ 235   1        {
+ 236   2          US0CON0 |= 0X08;
+ 237   2        }
+ 238   1        else
+ 239   1        {
+ 240   2          US0CON0 &= 0XF7;
+ 241   2        }
+ 242   1      }
+ 243          
+ 244          /**************************************************
+ 245          *函数名称:void USCI0_TWI_GeneralCallCmd(FunctionalState NewState)
+ 246          *函数功能:TWI通用地址响应使能函数
+ 247          *入口参数:
+ 248          FunctionalState:NewState:通用地址响应使能/失能选择
+ 249          *出口参数:void
+ 250          **************************************************/
+ 251          void USCI0_TWI_GeneralCallCmd(FunctionalState NewState)
+ 252          {
+ 253   1        OTCON = OTCON & 0XCF | 0X20;
+ 254   1      
+ 255   1        if (NewState != DISABLE)
+ 256   1        {
+ 257   2          US0CON2 |= 0X01;
+ 258   2        }
+ 259   1        else
+ 260   1        {
+ 261   2          US0CON2 &= 0XFE;
+ 262   2        }
+ 263   1      }
+ 264          
+ 265          /*****************************************************
+ 266          *函数名称:FlagStatus USCI0_GetTWIStatus(USCI0_TWIState_TypeDef USCI0_TWIState)
+ 267          *函数功能:读取TWI状态
+ 268          *入口参数:
+ 269          USCI0_TWIState_TypeDef:USCI0_TWIState:TWI状态类型
+ 270          *出口参数:
+ 271          FlagStatus:USCI0_SC标志状态     
+ 272          *****************************************************/
+ 273          FlagStatus USCI0_GetTWIStatus(USCI0_TWIState_TypeDef USCI0_TWIState)
+ 274          {
+ 275   1        if ((US0CON0 & 0x07) == USCI0_TWIState)
+ 276   1          return SET;
+ 277   1        else
+ 278   1          return RESET;
+ 279   1      }
+ 280          
+ 281          /*****************************************************
+ 282          *函数名称:void USCI0_TWI_Cmd(FunctionalState NewState)
+ 283          *函数功能:TWI功能开关函数
+ 284          *入口参数:
+ 285          FunctionalState:NewState:功能启动/关闭选择
+ 286          *出口参数:void
+ 287          *****************************************************/
+ 288          void USCI0_TWI_Cmd(FunctionalState NewState)
+ 289          {
+ 290   1        OTCON = OTCON & 0XCF | 0X20;
+ 291   1      
+ 292   1        if (NewState != DISABLE)
+ 293   1        {
+ 294   2          US0CON0 |= 0X80;
+ 295   2        }
+C51 COMPILER V9.54   SC95F_USCI0                                                           04/19/2023 15:54:52 PAGE 6   
+
+ 296   1        else
+ 297   1        {
+ 298   2          US0CON0 &= (~0X80);
+ 299   2        }
+ 300   1      }
+ 301          
+ 302          /*****************************************************
+ 303          *函数名称:void USCI0_TWI_SendData(uint8_t Data)
+ 304          *函数功能:TWI发送数据
+ 305          *入口参数:
+ 306          uint8_t:Data:发送的数据
+ 307          *出口参数:void
+ 308          *****************************************************/
+ 309          void USCI0_TWI_SendData(uint8_t Data)
+ 310          {
+ 311   1        US0CON3 = Data;
+ 312   1      }
+ 313          
+ 314          /*****************************************************
+ 315          *函数名称:uint8_t USCI0_TWI_SendData(void)
+ 316          *函数功能:获得US0CON3中的值
+ 317          *入口参数:void
+ 318          *出口参数:
+ 319          uint8_t:接收的数据
+ 320          *****************************************************/
+ 321          uint8_t USCI0_TWI_ReceiveData(void)
+ 322          {
+ 323   1        return US0CON3;
+ 324   1      }
+ 325          
+ 326          /**************************************************
+ 327          *函数名称:void USCI0_UART_Init(uint32_t UARTFsys, uint32_t BaudRate, USCI0_UART_Mode_TypeDef Mode, USCI0_U
+             -ART_RX_TypeDef RxMode)
+ 328          *函数功能:UART初始化配置函数
+ 329          *入口参数:
+ 330          uint32_t:UARTFsys:系统时钟频率
+ 331          uint32_t:BaudRate:波特率
+ 332          USCI0_UART_Mode_TypeDef:Mode:UART1工作模式
+ 333          USCI0_UART_RX_TypeDef:RxMode:接收允许选择
+ 334          *出口参数:void
+ 335          **************************************************/
+ 336          void USCI0_UART_Init(uint32_t UARTFsys, uint32_t BaudRate, USCI0_UART_Mode_TypeDef Mode,
+ 337                               USCI0_UART_RX_TypeDef RxMode)
+ 338          {
+ 339   1        OTCON |= 0x30;
+ 340   1        US0CON0 = US0CON0 & 0X0F | Mode | RxMode;
+ 341   1      
+ 342   1        if (Mode == USCI0_UART_Mode_8B)
+ 343   1        {
+ 344   2          if (BaudRate == USCI0_UART_BaudRate_FsysDIV12)
+ 345   2          {
+ 346   3            US0CON0 &= 0XDF;
+ 347   3          }
+ 348   2          else if (BaudRate == USCI0_UART_BaudRate_FsysDIV4)
+ 349   2          {
+ 350   3            US0CON0 |= 0X20;
+ 351   3          }
+ 352   2        }
+ 353   1        else
+ 354   1        {
+ 355   2          US0CON2 = UARTFsys / BaudRate / 256;
+ 356   2          US0CON1 = UARTFsys / BaudRate % 256;
+C51 COMPILER V9.54   SC95F_USCI0                                                           04/19/2023 15:54:52 PAGE 7   
+
+ 357   2        }
+ 358   1      }
+ 359          
+ 360          /*****************************************************
+ 361          *函数名称:void USCI0_UART_SendData8(uint8_t Data)
+ 362          *函数功能:USCI0 UART1发送8位数据
+ 363          *入口参数:
+ 364          uint8_t:Data:发送的数据
+ 365          *出口参数:void
+ 366          *****************************************************/
+ 367          void USCI0_UART_SendData8(uint8_t Data)
+ 368          {
+ 369   1        US0CON3 = Data;
+ 370   1      }
+ 371          
+ 372          /*****************************************************
+ 373          *函数名称:uint8_t USCI0_UART_ReceiveData8(void)
+ 374          *函数功能:获得US0CON3中的值
+ 375          *入口参数:void
+ 376          *出口参数:
+ 377          uint8_t:接收的数据
+ 378          *****************************************************/
+ 379          uint8_t USCI0_UART_ReceiveData8(void)
+ 380          {
+ 381   1        return US0CON3;
+ 382   1      }
+ 383          
+ 384          /*****************************************************
+ 385          *函数名称:void USCI0_UART_SendData9(uint16_t Data)
+ 386          *函数功能:UART1发送9位数据
+ 387          *入口参数:
+ 388          uint16_t:Data:发送的数据
+ 389          *出口参数:void
+ 390          *****************************************************/
+ 391          void USCI0_UART_SendData9(uint16_t Data)
+ 392          {
+ 393   1        uint8_t Data_9Bit;
+ 394   1        Data_9Bit = (Data >> 8);
+ 395   1      
+ 396   1        if (Data_9Bit)
+ 397   1        {
+ 398   2          US0CON0 |= 0x08;
+ 399   2        }
+ 400   1        else
+ 401   1        {
+ 402   2          US0CON0 &= 0xf7;
+ 403   2        }
+ 404   1      
+ 405   1        US0CON3 = (uint8_t)Data;
+ 406   1      }
+ 407          
+ 408          /*****************************************************
+ 409          *函数名称:uint16_t USCI0_UART_ReceiveData9(void)
+ 410          *函数功能:获得US0CON3中的值及第九位的值
+ 411          *入口参数:void
+ 412          *出口参数:
+ 413          uint16_t:接收的数据
+ 414          *****************************************************/
+ 415          uint16_t USCI0_UART_ReceiveData9(void)
+ 416          {
+ 417   1        uint16_t Data9;
+ 418   1        Data9 = US0CON3 + ((uint16_t)(US0CON0 & 0X04) << 6);
+C51 COMPILER V9.54   SC95F_USCI0                                                           04/19/2023 15:54:52 PAGE 8   
+
+ 419   1        return Data9;
+ 420   1      }
+ 421          
+ 422          /*****************************************************
+ 423          *函数名称:void USCI0_ITConfig(FunctionalState NewState, PriorityStatus Priority)
+ 424          *函数功能:USCI0中断初始化
+ 425          *入口参数:
+ 426          FunctionalState:NewState:中断使能/关闭选择
+ 427          PriorityStatus:Priority:中断优先级选择
+ 428          *出口参数:void
+ 429          *****************************************************/
+ 430          void USCI0_ITConfig(FunctionalState NewState, PriorityStatus Priority)
+ 431          {
+ 432   1        if (NewState != DISABLE)
+ 433   1        {
+ 434   2          IE1 |= 0x01;
+ 435   2        }
+ 436   1        else
+ 437   1        {
+ 438   2          IE1 &= 0xFE;
+ 439   2        }
+ 440   1      
+ 441   1        /************************************************************/
+ 442   1        if (Priority != LOW)
+ 443   1        {
+ 444   2          IP1 |= 0x01;
+ 445   2        }
+ 446   1        else
+ 447   1        {
+ 448   2          IP1 &= 0xFE;
+ 449   2        }
+ 450   1      }
+ 451          
+ 452          /*****************************************************
+ 453          *函数名称:FlagStatus USCI0_GetFlagStatus(USCI0_Flag_TypeDef USCI0_FLAG)
+ 454          *函数功能:获得USCI0标志状态
+ 455          *入口参数:
+ 456          USCI0_Flag_TypeDef:USCI0_FLAG:所需获取的标志位
+ 457          *出口参数:
+ 458          FlagStatus:USCI0标志状态
+ 459          *****************************************************/
+ 460          FlagStatus USCI0_GetFlagStatus(USCI0_Flag_TypeDef USCI0_FLAG)
+ 461          {
+ 462   1        FlagStatus bitstatus = RESET;
+ 463   1      #if defined(SC95F8x1x) || defined(SC95F7x1x) || defined(SC95FWxx)
+              
+                if ((USCI0_FLAG == USCI0_SPI_FLAG_SPIF) || (USCI0_FLAG == USCI0_SPI_FLAG_WCOL) || (USCI0_FLAG == USCI0_T
+             -WI_FLAG_TXRXnE))
+              #endif
+ 467   1      #if defined(SC95F8x2x) || defined(SC95F7x2x) || defined(SC95F8x3x) || defined(SC95F7x3x) || defined (SC95F
+             -8x6x) || defined (SC95F7x6x)  || defined (SC95F8x1xB) || defined (SC95F7x1xB) || defined (SC95F7619B)
+ 468   1          if ((USCI0_FLAG == USCI0_SPI_FLAG_SPIF) || (USCI0_FLAG == USCI0_SPI_FLAG_WCOL) || (USCI0_FLAG == USCI0
+             -_SPI_FLAG_TXE) || (USCI0_FLAG == USCI0_TWI_FLAG_TXRXnE))
+ 469   1      #endif
+ 470   1          {
+ 471   2            if ((USCI0_FLAG & US0CON1) != (uint8_t)RESET)
+ 472   2            {
+ 473   3              bitstatus = SET;
+ 474   3            }
+ 475   2            else
+ 476   2            {
+ 477   3              bitstatus = RESET;
+C51 COMPILER V9.54   SC95F_USCI0                                                           04/19/2023 15:54:52 PAGE 9   
+
+ 478   3            }
+ 479   2          }
+ 480   1          else
+ 481   1          {
+ 482   2            if ((USCI0_FLAG & US0CON0) != (uint8_t)RESET)
+ 483   2            {
+ 484   3              bitstatus = SET;
+ 485   3            }
+ 486   2            else
+ 487   2            {
+ 488   3              bitstatus = RESET;
+ 489   3            }
+ 490   2          }
+ 491   1      
+ 492   1        return bitstatus;
+ 493   1      }
+ 494          
+ 495          /*****************************************************
+ 496          *函数名称:void USCI0_ClearFlag(USCI0_Flag_TypeDef USCI0_FLAG)
+ 497          *函数功能:清除USCI0标志状态
+ 498          *入口参数:
+ 499          USCI0_Flag_TypeDef:USCI0_FLAG:所需清除的标志位
+ 500          *出口参数:void
+ 501          *****************************************************/
+ 502          void USCI0_ClearFlag(USCI0_Flag_TypeDef USCI0_FLAG)
+ 503          {
+ 504   1      #if defined(SC95F8x1x) || defined(SC95F7x1x) || defined(SC95FWxx)
+              
+                if ((USCI0_FLAG == USCI0_SPI_FLAG_SPIF) || (USCI0_FLAG == USCI0_SPI_FLAG_WCOL) || (USCI0_FLAG == USCI0_T
+             -WI_FLAG_TXRXnE))
+              
+              #elif defined(SC95F8x2x) || defined(SC95F7x2x) || defined(SC95F8x3x) || defined(SC95F7x3x) || defined (SC9
+             -5F8x6x) || defined (SC95F7x6x)\
+                                      || defined (SC95F8x1xB) || defined (SC95F7x1xB) || defined (SC95F7619B)
+ 510   1      
+ 511   1        if ((USCI0_FLAG == USCI0_SPI_FLAG_SPIF) || (USCI0_FLAG == USCI0_SPI_FLAG_WCOL) || (USCI0_FLAG == USCI0_S
+             -PI_FLAG_TXE) || (USCI0_FLAG == USCI0_TWI_FLAG_TXRXnE))
+ 512   1      
+ 513   1      #endif
+ 514   1        {
+ 515   2          US0CON1 &= (~USCI0_FLAG); //操作寄存器US0CON1
+ 516   2        }
+ 517   1        else if ((USCI0_FLAG == USCI0_UART_FLAG_TI) || (USCI0_FLAG == USCI0_UART_FLAG_RI))
+ 518   1        {
+ 519   2      #if defined(SC95F8x3x) || defined(SC95F7x3x) || defined (SC95F8x6x) || defined (SC95F7x6x)  || defined (SC
+             -95F8x1xB) || defined (SC95F7x1xB)
+ 520   2          US0CON0 = US0CON0  & 0xFC | USCI0_FLAG;//写1清零
+ 521   2      #else
+                  US0CON0 &= (~USCI0_FLAG); //写0清零
+              #endif
+ 524   2        }
+ 525   1        else
+ 526   1        {
+ 527   2          US0CON0 &= (~USCI0_FLAG); //操作寄存器US0CON0
+ 528   2        }
+ 529   1      }
+ 530          
+ 531          /*****************************************************
+ 532          *函数名称:void USCI0_TWI_SendAddr(uint8_t Addr,USCI0_TWI_RWType RW)
+ 533          *函数功能:TWI发送地址，读写类型
+ 534          *入口参数:
+ 535          uint8_t:Addr:发送的地址 0~127
+C51 COMPILER V9.54   SC95F_USCI0                                                           04/19/2023 15:54:52 PAGE 10  
+
+ 536          USCI0_TWI_RWType:RW:读写类型
+ 537          *出口参数:void
+ 538          *****************************************************/
+ 539          void USCI0_TWI_SendAddr(uint8_t Addr, USCI0_TWI_RWType RW)
+ 540          {
+ 541   1        US0CON3 = (Addr << 1) | RW;
+ 542   1      }
+ 543          
+ 544          #if defined(SC95F8x2x) || defined(SC95F7x2x)
+              /**************************************************
+              *函数名称:void USCI0_SC_Init()
+              *函数功能:智能卡初始化配置函数
+              *入口参数:
+              FunctionalState:ClockEnable:时钟输出使能位
+              USCI0_SC_ERS_TypeDef:ErrorSignal:ErrorSignal长度
+              USCI0_SC_TREN_TypeDef:TrenMode:发送/接收使能，发送和接收只能二选一
+              USCI0_SC_CONS_TypeDef:ConsMod:编码方式选择
+              FunctionalState:ReSend:数据发送接收校验出错重发使能位
+              USCI0_SC_Check_TypeDef:CheckType:校验类型
+              *出口参数:void
+              **************************************************/
+              void USCI0_SC_Init(FunctionalState ClockEnable,
+                                 USCI0_SC_ERS_TypeDef ErrorSignal,
+                                 USCI0_SC_TREN_TypeDef TrenMode,
+                                 USCI0_SC_CONS_TypeDef ConsMode,
+                                 FunctionalState ReSend,
+                                 USCI0_SC_Check_TypeDef CheckType)
+              {
+                if (ClockEnable != DISABLE)
+                {
+                  US0CON0 |= 0x40;
+                }
+                else
+                {
+                  US0CON0 &= ~0x40;
+                }
+              
+                US0CON0 &= ~0x3d;
+                US0CON0 |= TrenMode | ConsMode | CheckType | (ErrorSignal << 3);
+              
+                if (ReSend != DISABLE)
+                {
+                  US0CON0 |= 0x02;
+                }
+                else
+                {
+                  US0CON0 &= ~0x02;
+                }
+              }
+              /**************************************************
+              *函数名称:void USCI0_SC_EGT(uint8_t EgtCount)
+              *函数功能:智能卡拓展保护时间设置
+              *入口参数:
+              uint8_t:EgtCount:拓展保护时间数:EgtCount个ETU
+              *出口参数:void
+              **************************************************/
+              void USCI0_SC_EGT(uint8_t EgtCount)
+              {
+                US0CON4 = EgtCount;
+              }
+              
+              /**************************************************
+C51 COMPILER V9.54   SC95F_USCI0                                                           04/19/2023 15:54:52 PAGE 11  
+
+              *函数名称:void USCI0_SC_ETU_SET(USCI0_SC_Pres   Sel_TypeDef SC_PrescalerSelection,uint8_t EtuCk)
+              *函数功能:ETU设置，一个ETU时间长度设置
+              *入口参数:
+              USCI0_SC_PresSel_TypeDef:SC_PrescalerSelection:SC Clock 时钟来源
+              uint16_t:EtuCk:一个ETU为(EtuCk+1)个SC Clock。必须大于0x004
+              *出口参数:void
+              **************************************************/
+              void USCI0_SC_ETU_SET(USCI0_SC_PresSel_TypeDef SC_PrescalerSelection, uint16_t EtuCk)
+              {
+                US0CON2 = (EtuCk >> 8);
+                US0CON1 = (uint8_t)EtuCk;
+                US0CON2 = (SC_PrescalerSelection << 4);
+              }
+              /*****************************************************
+              *函数名称:void USCI0_SC_Cmd(FunctionalState NewState)
+              *函数功能:智能卡功能开关函数
+              *入口参数:
+              FunctionalState:NewState:功能启动/关闭选择
+              *出口参数:void
+              *****************************************************/
+              void USCI0_SC_Cmd(FunctionalState NewState)
+              {
+                if (NewState == DISABLE)
+                {
+                  US0CON0 &= 0X7F;
+                }
+                else
+                {
+                  US0CON0 |= 0x80;
+                }
+              }
+              /*****************************************************
+              *函数名称:FlagStatus USCI0_SC_GetFlagStatus(USCI0_SC_Flag_TypeDef USCI0_SC_FLAG)
+              *函数功能:获得SC标志状态
+              *入口参数:
+              USCI0_SC_Flag_TypeDef:USCI0_SC_FLAG:所需获取的标志位
+              *出口参数:
+              FlagStatus:USCI0_SC标志状态
+              *****************************************************/
+              FlagStatus USCI0_SC_GetFlagStatus(USCI0_SC_Flag_TypeDef USCI0_SC_FLAG)
+              {
+                //      寄存器切换控制位:
+                //      0 :US0CON5 (B7H)为读写状态寄存器
+                //      1 :US0CON5 (B7H)为读写错误信息寄存器
+                US0CON5 |= (USCI0_SC_FLAG & 0X80);
+                return USCI0_SC_FLAG & US0CON5;
+              }
+              /*****************************************************
+              *函数名称:void USCI0_UART_SendData(uint8_t Data)
+              *函数功能:USCI0 SC发送8位数据
+              *入口参数:
+              uint8_t:Data:发送的数据
+              *出口参数:void
+              *****************************************************/
+              void USCI0_SC_SendData(uint8_t Data)
+              {
+                US0CON3 = Data;
+              }
+              /*****************************************************
+              *函数名称:uint8_t USCI0_SC_ReceiveData(void)
+              *函数功能:获得接收缓存中的值
+              *入口参数:void
+C51 COMPILER V9.54   SC95F_USCI0                                                           04/19/2023 15:54:52 PAGE 12  
+
+              *出口参数:
+              uint8_t:接收的数据
+              *****************************************************/
+              uint8_t USCI0_SC_ReceiveData(void)
+              {
+                return US0CON3;
+              }
+              
+              #endif
+ 669          
+ 670          #if defined(SC95F8x2x) || defined(SC95F7x2x) || defined(SC95F8x3x) || defined(SC95F7x3x) || defined (SC95F
+             -8x6x) || defined (SC95F7x6x)  || defined (SC95F8x1xB) || defined (SC95F7x1xB)
+ 671          /*********************************************************************************************************
+             -*
+ 672          *函数名称:uint8_t USCI0_SPI_WriteFIFO(uint16_t *sbuf,uint8_t length)
+ 673          *函数功能:SPI0写入FIFO
+ 674          *入口参数:
+ 675          uint16_t:*sbuf:发送buffer
+ 676          uint8_t:length:发送数据长度
+ 677          *出口参数:
+ 678          uint8_t:(0:非法操作；1:写入FIFO缓存成功)
+ 679          **********************************************************************************************************
+             -/
+ 680          uint8_t USCI0_SPI_WriteFIFO(uint16_t *sbuf, uint8_t length)
+ 681          {
+ 682   1        if (length > 8 || length < 1)
+ 683   1        {
+ 684   2          return 0;
+ 685   2        }
+ 686   1        else
+ 687   1        {
+ 688   2          uint8_t i = 0;
+ 689   2          US0CON1 &= ~0x01; //关闭TBIE
+ 690   2      
+ 691   2          for (i = 0; i < length; i++)
+ 692   2          {
+ 693   3            US0CON3 = *(sbuf + i) >> 8; //写入待发送数据的高字节
+ 694   3            US0CON2 = *(sbuf + i);      //写入待发送数据的低字节
+ 695   3          }
+ 696   2      
+ 697   2          if (length != 0x01) //若非单次写入，需清除TXE
+ 698   2          {
+ 699   3            US0CON1 &= (~0x08); //清TXE
+ 700   3          }
+ 701   2      
+ 702   2          US0CON1 |= 0x01; //开启TBIE
+ 703   2          return 1;
+ 704   2        }
+ 705   1      }
+ 706          #endif
+ 707          
+ 708          #endif
+ 709          
+ 710          /******************* (C) COPYRIGHT 2022 SinOne Microelectronics *****END OF FILE****/
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    719    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----      21
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+C51 COMPILER V9.54   SC95F_USCI0                                                           04/19/2023 15:54:52 PAGE 13  
+
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

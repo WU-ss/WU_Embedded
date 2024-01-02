@@ -1,0 +1,358 @@
+C51 COMPILER V9.54   GUI                                                                   04/19/2023 15:54:53 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE GUI
+OBJECT MODULE PLACED IN ..\Output\GUI.obj
+COMPILER INVOKED BY: D:\Keil5\C51\BIN\C51.EXE ..\Bank1\GUI.c LARGE OBJECTADVANCED OPTIMIZE(8,SIZE) BROWSE INCDIR(..\FWLi
+                    -b\SC95F_Lib\inc;..\User;..\Bank1;..\Bank2;..\Bank3) DEFINE(SC95F8x3x) DEBUG PRINT(..\List\GUI.lst) OBJECT(..\Output\GUI.
+                    -obj)
+
+line level    source
+
+   1          #include "GUI.h"
+   2          #include "SC_Init.h"    // MCU initialization header file, including all firmware library header files
+   3          #include "Lcd_Driver.h"
+   4          #include "delay.h"
+   5          #include "font.h"
+   6          
+   7          u16 LCD_BGR2RGB(u16 c)
+   8          {
+   9   1        u16  r,g,b,rgb;   
+  10   1        b=(c>>0)&0x1f;
+  11   1        g=(c>>5)&0x3f;
+  12   1        r=(c>>11)&0x1f;        
+  13   1        rgb=(b<<11)+(g<<5)+(r<<0);             
+  14   1        return(rgb);
+  15   1      
+  16   1      }
+  17          
+  18          void Gui_Circle(u16 X,u16 Y,u16 R,u16 fc) 
+  19          {
+  20   1          unsigned short  a,b; 
+  21   1          int c; 
+  22   1          a=0; 
+  23   1          b=R; 
+  24   1          c=3-2*R; 
+  25   1          while (a<b) 
+  26   1          { 
+  27   2              Gui_DrawPoint(X+a,Y+b,fc);     //        7 
+  28   2              Gui_DrawPoint(X-a,Y+b,fc);     //        6 
+  29   2              Gui_DrawPoint(X+a,Y-b,fc);     //        2 
+  30   2              Gui_DrawPoint(X-a,Y-b,fc);     //        3 
+  31   2              Gui_DrawPoint(X+b,Y+a,fc);     //        8 
+  32   2              Gui_DrawPoint(X-b,Y+a,fc);     //        5 
+  33   2              Gui_DrawPoint(X+b,Y-a,fc);     //        1 
+  34   2              Gui_DrawPoint(X-b,Y-a,fc);     //        4 
+  35   2      
+  36   2              if(c<0) c=c+4*a+6; 
+  37   2              else 
+  38   2              { 
+  39   3                  c=c+4*(a-b)+10; 
+  40   3                  b-=1; 
+  41   3              } 
+  42   2             a+=1; 
+  43   2          } 
+  44   1          if (a==b) 
+  45   1          { 
+  46   2              Gui_DrawPoint(X+a,Y+b,fc); 
+  47   2              Gui_DrawPoint(X+a,Y+b,fc); 
+  48   2              Gui_DrawPoint(X+a,Y-b,fc); 
+  49   2              Gui_DrawPoint(X-a,Y-b,fc); 
+  50   2              Gui_DrawPoint(X+b,Y+a,fc); 
+  51   2              Gui_DrawPoint(X-b,Y+a,fc); 
+  52   2              Gui_DrawPoint(X+b,Y-a,fc); 
+  53   2              Gui_DrawPoint(X-b,Y-a,fc); 
+C51 COMPILER V9.54   GUI                                                                   04/19/2023 15:54:53 PAGE 2   
+
+  54   2          } 
+  55   1              
+  56   1      } 
+  57          
+  58          void Gui_DrawLine(u16 x0, u16 y0,u16 x1, u16 y1,u16 Color)   
+  59          {
+  60   1      int dx,             // difference in x's
+  61   1          dy,             // difference in y's
+  62   1          dx2,            // dx,dy * 2
+  63   1          dy2, 
+  64   1          x_inc,          // amount in pixel space to move during drawing
+  65   1          y_inc,          // amount in pixel space to move during drawing
+  66   1          error,          // the discriminant i.e. error i.e. decision variable
+  67   1          index;          // used for looping 
+  68   1      
+  69   1      
+  70   1              Lcd_SetXY(x0,y0);
+  71   1              dx = x1-x0;//计算x距离
+  72   1              dy = y1-y0;//计算y距离
+  73   1      
+  74   1              if (dx>=0)
+  75   1              {
+  76   2                      x_inc = 1;
+  77   2              }
+  78   1              else
+  79   1              {
+  80   2                      x_inc = -1;
+  81   2                      dx    = -dx;  
+  82   2              } 
+  83   1              
+  84   1              if (dy>=0)
+  85   1              {
+  86   2                      y_inc = 1;
+  87   2              } 
+  88   1              else
+  89   1              {
+  90   2                      y_inc = -1;
+  91   2                      dy    = -dy; 
+  92   2              } 
+  93   1      
+  94   1              dx2 = dx << 1;
+  95   1              dy2 = dy << 1;
+  96   1      
+  97   1              if (dx > dy)//x距离大于y距离，那么每个x轴上只有一个点，每个y轴上有若干个点
+  98   1              {//且线的点数等于x距离，以x轴递增画点
+  99   2                      // initialize error term
+ 100   2                      error = dy2 - dx; 
+ 101   2      
+ 102   2                      // draw the line
+ 103   2                      for (index=0; index <= dx; index++)//要画的点数不会超过x距离
+ 104   2                      {
+ 105   3                              //画点
+ 106   3                              Gui_DrawPoint(x0,y0,Color);
+ 107   3                              
+ 108   3                              // test if error has overflowed
+ 109   3                              if (error >= 0) //是否需要增加y坐标值
+ 110   3                              {
+ 111   4                                      error-=dx2;
+ 112   4      
+ 113   4                                      // move to next line
+ 114   4                                      y0+=y_inc;//增加y坐标值
+ 115   4                              } // end if error overflowed
+C51 COMPILER V9.54   GUI                                                                   04/19/2023 15:54:53 PAGE 3   
+
+ 116   3      
+ 117   3                              // adjust the error term
+ 118   3                              error+=dy2;
+ 119   3      
+ 120   3                              // move to the next pixel
+ 121   3                              x0+=x_inc;//x坐标值每次画点后都递增1
+ 122   3                      } // end for
+ 123   2              } // end if |slope| <= 1
+ 124   1              else//y轴大于x轴，则每个y轴上只有一个点，x轴若干个点
+ 125   1              {//以y轴为递增画点
+ 126   2                      // initialize error term
+ 127   2                      error = dx2 - dy; 
+ 128   2      
+ 129   2                      // draw the line
+ 130   2                      for (index=0; index <= dy; index++)
+ 131   2                      {
+ 132   3                              // set the pixel
+ 133   3                              Gui_DrawPoint(x0,y0,Color);
+ 134   3      
+ 135   3                              // test if error overflowed
+ 136   3                              if (error >= 0)
+ 137   3                              {
+ 138   4                                      error-=dy2;
+ 139   4      
+ 140   4                                      // move to next line
+ 141   4                                      x0+=x_inc;
+ 142   4                              } // end if error overflowed
+ 143   3      
+ 144   3                              // adjust the error term
+ 145   3                              error+=dx2;
+ 146   3      
+ 147   3                              // move to the next pixel
+ 148   3                              y0+=y_inc;
+ 149   3                      } // end for
+ 150   2              } // end else |slope| > 1
+ 151   1      }
+ 152          
+ 153          void Gui_box(u16 x, u16 y, u16 w, u16 h,u16 bc)
+ 154          {
+ 155   1              Gui_DrawLine(x,y,x+w,y,0xEF7D);
+ 156   1              Gui_DrawLine(x+w-1,y+1,x+w-1,y+1+h,0x2965);
+ 157   1              Gui_DrawLine(x,y+h,x+w,y+h,0x2965);
+ 158   1              Gui_DrawLine(x,y,x,y+h,0xEF7D);
+ 159   1          Gui_DrawLine(x+1,y+1,x+1+w-2,y+1+h-2,bc);
+ 160   1      }
+ 161          
+ 162          void Gui_box2(u16 x,u16 y,u16 w,u16 h, u8 mode)
+ 163          {
+ 164   1              if (mode==0)    {
+ 165   2                      Gui_DrawLine(x,y,x+w,y,0xEF7D);
+ 166   2                      Gui_DrawLine(x+w-1,y+1,x+w-1,y+1+h,0x2965);
+ 167   2                      Gui_DrawLine(x,y+h,x+w,y+h,0x2965);
+ 168   2                      Gui_DrawLine(x,y,x,y+h,0xEF7D);
+ 169   2                      }
+ 170   1              if (mode==1)    {
+ 171   2                      Gui_DrawLine(x,y,x+w,y,0x2965);
+ 172   2                      Gui_DrawLine(x+w-1,y+1,x+w-1,y+1+h,0xEF7D);
+ 173   2                      Gui_DrawLine(x,y+h,x+w,y+h,0xEF7D);
+ 174   2                      Gui_DrawLine(x,y,x,y+h,0x2965);
+ 175   2              }
+ 176   1              if (mode==2)    {
+ 177   2                      Gui_DrawLine(x,y,x+w,y,0xffff);
+C51 COMPILER V9.54   GUI                                                                   04/19/2023 15:54:53 PAGE 4   
+
+ 178   2                      Gui_DrawLine(x+w-1,y+1,x+w-1,y+1+h,0xffff);
+ 179   2                      Gui_DrawLine(x,y+h,x+w,y+h,0xffff);
+ 180   2                      Gui_DrawLine(x,y,x,y+h,0xffff);
+ 181   2              }
+ 182   1      }
+ 183          
+ 184          void DisplayButtonDown(u16 x1,u16 y1,u16 x2,u16 y2)
+ 185          {
+ 186   1              Gui_DrawLine(x1,  y1,  x2,y1, GRAY2);  //H
+ 187   1              Gui_DrawLine(x1+1,y1+1,x2,y1+1, GRAY1);  //H
+ 188   1              Gui_DrawLine(x1,  y1,  x1,y2, GRAY2);  //V
+ 189   1              Gui_DrawLine(x1+1,y1+1,x1+1,y2, GRAY1);  //V
+ 190   1              Gui_DrawLine(x1,  y2,  x2,y2, WHITE);  //H
+ 191   1              Gui_DrawLine(x2,  y1,  x2,y2, WHITE);  //V
+ 192   1      }
+ 193          
+ 194          void DisplayButtonUp(u16 x1,u16 y1,u16 x2,u16 y2)
+ 195          {
+ 196   1              Gui_DrawLine(x1,  y1,  x2,y1, WHITE); //H
+ 197   1              Gui_DrawLine(x1,  y1,  x1,y2, WHITE); //V
+ 198   1              
+ 199   1              Gui_DrawLine(x1+1,y2-1,x2,y2-1, GRAY1);  //H
+ 200   1              Gui_DrawLine(x1,  y2,  x2,y2, GRAY2);  //H
+ 201   1              Gui_DrawLine(x2-1,y1+1,x2-1,y2, GRAY1);  //V
+ 202   1          Gui_DrawLine(x2  ,y1  ,x2,y2, GRAY2); //V
+ 203   1      }
+ 204          
+ 205          void Gui_DrawFont_GBK16(u16 x, u16 y, u16 fc, u16 bc, u8 *s)
+ 206          {
+ 207   1              unsigned char i,j;
+ 208   1              unsigned short k,x0;
+ 209   1              x0=x;
+ 210   1      
+ 211   1              while(*s) 
+ 212   1              {       
+ 213   2                      if((*s) < 128) 
+ 214   2                      {
+ 215   3                              k=*s;
+ 216   3                              if (k==13) 
+ 217   3                              {
+ 218   4                                      x=x0;
+ 219   4                                      y+=16;
+ 220   4                              }
+ 221   3                              else 
+ 222   3                              {
+ 223   4                                      if (k>32) k-=32; else k=0;
+ 224   4              
+ 225   4                                  for(i=0;i<16;i++)
+ 226   4                                      for(j=0;j<8;j++) 
+ 227   4                                              {
+ 228   5                                              if(asc16[k*16+i]&(0x80>>j))     Gui_DrawPoint(x+j,y+i,fc);
+ 229   5                                                      else 
+ 230   5                                                      {
+ 231   6                                                              if (fc!=bc) Gui_DrawPoint(x+j,y+i,bc);
+ 232   6                                                      }
+ 233   5                                              }
+ 234   4                                      x+=8;
+ 235   4                              }
+ 236   3                              s++;
+ 237   3                      }
+ 238   2                              
+ 239   2                      else 
+C51 COMPILER V9.54   GUI                                                                   04/19/2023 15:54:53 PAGE 5   
+
+ 240   2                      {
+ 241   3                      
+ 242   3      
+ 243   3                              for (k=0;k<hz16_num;k++) 
+ 244   3                              {
+ 245   4                                if ((hz16[k].Index[0]==*(s))&&(hz16[k].Index[1]==*(s+1)))
+ 246   4                                { 
+ 247   5                                          for(i=0;i<16;i++)
+ 248   5                                          {
+ 249   6                                                      for(j=0;j<8;j++) 
+ 250   6                                                              {
+ 251   7                                                              if(hz16[k].Msk[i*2]&(0x80>>j))  Gui_DrawPoint(x+j,y+i,fc);
+ 252   7                                                                      else {
+ 253   8                                                                              if (fc!=bc) Gui_DrawPoint(x+j,y+i,bc);
+ 254   8                                                                      }
+ 255   7                                                              }
+ 256   6                                                      for(j=0;j<8;j++) 
+ 257   6                                                              {
+ 258   7                                                              if(hz16[k].Msk[i*2+1]&(0x80>>j))        Gui_DrawPoint(x+j+8,y+i,fc);
+ 259   7                                                                      else 
+ 260   7                                                                      {
+ 261   8                                                                              if (fc!=bc) Gui_DrawPoint(x+j+8,y+i,bc);
+ 262   8                                                                      }
+ 263   7                                                              }
+ 264   6                                          }
+ 265   5                                      }
+ 266   4                                }
+ 267   3                              s+=2;x+=16;
+ 268   3                      } 
+ 269   2                      
+ 270   2              }
+ 271   1      }
+ 272          
+ 273          void Gui_DrawFont_GBK24(u16 x, u16 y, u16 fc, u16 bc, u8 *s)
+ 274          {
+ 275   1              unsigned char i,j;
+ 276   1              unsigned short k;
+ 277   1      
+ 278   1              while(*s) 
+ 279   1              {
+ 280   2                      if( *s < 0x80 ) 
+ 281   2                      {
+ 282   3                              k=*s;
+ 283   3                              if (k>32) k-=32; else k=0;
+ 284   3      
+ 285   3                          for(i=0;i<16;i++)
+ 286   3                              for(j=0;j<8;j++) 
+ 287   3                                      {
+ 288   4                                      if(asc16[k*16+i]&(0x80>>j))     
+ 289   4                                              Gui_DrawPoint(x+j,y+i,fc);
+ 290   4                                              else 
+ 291   4                                              {
+ 292   5                                                      if (fc!=bc) Gui_DrawPoint(x+j,y+i,bc);
+ 293   5                                              }
+ 294   4                                      }
+ 295   3                              s++;x+=8;
+ 296   3                      }
+ 297   2                      
+ 298   2              }
+ 299   1      }
+ 300          
+ 301          void Gui_DrawFont_Num32(u16 x, u16 y, u16 fc, u16 bc, u16 num)
+C51 COMPILER V9.54   GUI                                                                   04/19/2023 15:54:53 PAGE 6   
+
+ 302          {
+ 303   1              unsigned char i,j,k,c;
+ 304   1          for(i=0;i<32;i++)
+ 305   1              {
+ 306   2                      for(j=0;j<4;j++) 
+ 307   2                      {
+ 308   3                              c=*(sz32+num*32*4+i*4+j);
+ 309   3                              for (k=0;k<8;k++)       
+ 310   3                              {
+ 311   4              
+ 312   4                              if(c&(0x80>>k)) Gui_DrawPoint(x+j*8+k,y+i,fc);
+ 313   4                                      else {
+ 314   5                                              if (fc!=bc) Gui_DrawPoint(x+j*8+k,y+i,bc);
+ 315   5                                      }
+ 316   4                              }
+ 317   3                      }
+ 318   2              }
+ 319   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   5380    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   3448     123
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,73 @@
+C51 COMPILER V9.54   KEY                                                                   04/19/2023 15:54:54 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE KEY
+OBJECT MODULE PLACED IN ..\Output\Key.obj
+COMPILER INVOKED BY: D:\Keil5\C51\BIN\C51.EXE ..\Bank2\Key.c LARGE OBJECTADVANCED OPTIMIZE(8,SIZE) BROWSE INCDIR(..\FWLi
+                    -b\SC95F_Lib\inc;..\User;..\Bank1;..\Bank2;..\Bank3) DEFINE(SC95F8x3x) DEBUG PRINT(..\List\Key.lst) OBJECT(..\Output\Key.
+                    -obj)
+
+line level    source
+
+   1          #include "Key.h"
+   2          
+   3          //按键处理函数
+   4          //返回按键值
+   5          //mode:0,不支持连续按;1,支持连续按;
+   6          //返回值：
+   7          //0，没有任何按键按下 
+   8          u8 KEY_Scan(u8 mode)
+   9          {        
+  10   1              static u8 key_up=1;//按键按松开标志
+  11   1              if(mode)key_up=1;  //支持连按
+  12   1              SCD_Joystick_GetPosition();
+  13   1              if(key_up&&(KEY_Select==0||KEY_Start==0||KEY_X==0||X_POS==0||X_POS==2||KEY_B==0||KEY_A==0||KEY_Y==0))
+  14   1              {
+  15   2                      Delay_ms(10);//去抖动
+  16   2                      SCD_Joystick_GetPosition();             
+  17   2                      key_up=0;
+  18   2                      if(KEY_Select==0)return KEY_Select_PRES;
+  19   2                      else if(KEY_Start==0)return KEY_Start_PRES;
+  20   2                      else if(KEY_X==0)return KEY_X_PRES;
+  21   2                      else if(KEY_B==0)return KEY_B_PRES;
+  22   2                      else if(KEY_A==0)return KEY_A_PRES;
+  23   2                      else if(KEY_Y==0)return KEY_Y_PRES;
+  24   2                      else if(X_POS==0) return R_PRES;
+  25   2                      else if(X_POS==2) return L_PRES;
+  26   2                      else if(Y_POS==0) return U_PRES;
+  27   2                      else if(Y_POS==2) return D_PRES;
+  28   2              }else if(KEY_Select==1&&KEY_Start==1&&KEY_X==1)key_up=1;             
+  29   1              return 0;// 无按键按下
+  30   1      }
+  31          
+  32          //非连续模式下 检测按键Start是否按下
+  33          void KEYStart_to_skip(void){
+  34   1              while(1){
+  35   2                      if(KEY_Scan(0) == KEY_Start){
+  36   3                        break;
+  37   3                      }
+  38   2                      else{
+  39   3                              Delay_ms(10);
+  40   3                      }
+  41   2              }
+  42   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    370    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      1    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+C51 COMPILER V9.54   KEY                                                                   04/19/2023 15:54:54 PAGE 2   
+
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

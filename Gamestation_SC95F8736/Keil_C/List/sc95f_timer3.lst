@@ -1,0 +1,321 @@
+C51 COMPILER V9.54   SC95F_TIMER3                                                          04/19/2023 15:54:51 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE SC95F_TIMER3
+OBJECT MODULE PLACED IN ..\Output\sc95f_timer3.obj
+COMPILER INVOKED BY: D:\Keil5\C51\BIN\C51.EXE ..\FWLib\SC95F_Lib\src\sc95f_timer3.c LARGE OBJECTADVANCED OPTIMIZE(8,SIZE
+                    -) BROWSE INCDIR(..\FWLib\SC95F_Lib\inc;..\User;..\Bank1;..\Bank2;..\Bank3) DEFINE(SC95F8x3x) DEBUG PRINT(..\List\sc95f_t
+                    -imer3.lst) OBJECT(..\Output\sc95f_timer3.obj)
+
+line level    source
+
+   1          //************************************************************
+   2          //  Copyright (c) 
+   3          //      文件名称        : sc95f_timerx.c
+   4          //      作者            :
+   5          //      模块功能        : TIMER3固件库函数C文件
+   6          //  最后更正日期: 2022/01/24
+   7          //      版本            : V1.10001
+   8          //  说明        :该文件仅适用于SC95Fxx1x、SC95Fxx2x系列芯片
+   9          //*************************************************************
+  10          
+  11          #include "sc95f_timer3.h"
+  12          
+  13          /**************************************************
+  14          *函数名称:void TIMX_DeInit(void)
+  15          *函数功能:TIMER3相关寄存器复位至初始值
+  16          *入口参数:void
+  17          *出口参数:void
+  18          **************************************************/
+  19          void TIM3_DeInit()
+  20          {
+  21   1        TXINX = 0x03;    //TIMER3 选择
+  22   1        TXCON = 0X00;
+  23   1        TXMOD = 0X00;
+  24   1        RCAPXH = 0X00;
+  25   1        RCAPXL = 0X00;
+  26   1        THX = 0X00;
+  27   1        TLX = 0X00;
+  28   1        IE1 &= 0X3F;
+  29   1        IP1 &= 0X3F;
+  30   1        ET2 = 0;
+  31   1        IPT2 = 0;
+  32   1      }
+  33          
+  34          /**************************************************
+  35          *函数名称:void TIM3_PrescalerSelection(TIMX_TimerSelect_TypeDef TIMX_TimerSelect, TIMX_PresSel_TypeDef TIM
+             -X_PrescalerSelection)
+  36          *函数功能:TIMER3 预分频选择
+  37          *入口参数:
+  38          TIM3_PresSel_TypeDef:TIM3_PrescalerSelection:预分频选择
+  39          *出口参数:void
+  40          **************************************************/
+  41          void TIM3_PrescalerSelection(TIM3_PresSel_TypeDef TIM3_PrescalerSelection)
+  42          {
+  43   1        TXINX = 0x03;
+  44   1      
+  45   1        if(TIM3_PrescalerSelection == TIM3_PRESSEL_FSYS_D12)
+  46   1        {
+  47   2          TXMOD &= 0X7F;
+  48   2        }
+  49   1        else
+  50   1          if(TIM3_PrescalerSelection == TIM3_PRESSEL_FSYS_D1)
+  51   1          {
+  52   2            TXMOD |= 0X80;
+C51 COMPILER V9.54   SC95F_TIMER3                                                          04/19/2023 15:54:51 PAGE 2   
+
+  53   2          }
+  54   1      }
+  55          
+  56          /**************************************************
+  57          *函数名称:void TIM3_WorkMode1Config(uint16_t TIM3_SetCounter)
+  58          *函数功能:TIMER3工作模式1配置函数
+  59          *入口参数:
+  60          uint16_t TIM3_SetCounter        配置计数初值
+  61          *出口参数:void
+  62          **************************************************/
+  63          void TIM3_WorkMode1Config(uint16_t TIM3_SetCounter)
+  64          {
+  65   1        TXINX = 0x03;
+  66   1        RCAPXL = TIM3_SetCounter % 256;
+  67   1        RCAPXH = TIM3_SetCounter / 256;
+  68   1      
+  69   1        TLX = RCAPXL;
+  70   1        THX = RCAPXH;
+  71   1      }
+  72          
+  73          /*****************************************************
+  74          *函数名称:void TIM3_Cmd(FunctionalState NewState)
+  75          *函数功能:TIMER3功能开关函数
+  76          *入口参数:
+  77          FunctionalState:NewState:功能启动/关闭选择
+  78          *出口参数:void
+  79          *****************************************************/
+  80          void TIM3_Cmd(FunctionalState NewState)
+  81          {
+  82   1        TXINX = 0x03;
+  83   1      
+  84   1        if (NewState == DISABLE)
+  85   1        {
+  86   2          TRX = 0;
+  87   2        }
+  88   1        else
+  89   1        {
+  90   2          TRX = 1;
+  91   2        }
+  92   1      }
+  93          
+  94          /*****************************************************
+  95          *函数名称:void TIM3_ITConfig(TIM3_TimerSelect_TypeDef TIM3_TimerSelect, FunctionalState NewState, Priority
+             -Status Priority)
+  96          *函数功能:TIMER3中断初始化
+  97          *入口参数:
+  98          FunctionalState:NewState:中断使能/关闭选择
+  99          PriorityStatus:Priority:中断优先级选择
+ 100          *出口参数:void
+ 101          *****************************************************/
+ 102          void TIM3_ITConfig(FunctionalState NewState, PriorityStatus Priority)
+ 103          {
+ 104   1        TXINX = 0x03;
+ 105   1      
+ 106   1        if(NewState == DISABLE)
+ 107   1        {
+ 108   2          IE1 &= 0XBF;
+ 109   2        }
+ 110   1        else
+ 111   1        {
+ 112   2          IE1 |= 0X40;
+ 113   2        }
+C51 COMPILER V9.54   SC95F_TIMER3                                                          04/19/2023 15:54:51 PAGE 3   
+
+ 114   1      
+ 115   1        if(Priority == LOW)
+ 116   1        {
+ 117   2          IP1 &= 0XBF;
+ 118   2        }
+ 119   1        else
+ 120   1        {
+ 121   2          IP1 |= 0X40;
+ 122   2        }
+ 123   1      }
+ 124          
+ 125          /*****************************************************
+ 126          *函数名称:FlagStatus TIM3_GetFlagStatus(void)
+ 127          *函数功能:获得TIMER3中断标志状态
+ 128          *入口参数:
+ 129          TIM3_Flag_TypeDef:TIM3_Flag:TIMER3标志选择
+ 130          *出口参数:
+ 131          FlagStatus:TIMER3中断标志状态
+ 132          *****************************************************/
+ 133          FlagStatus TIM3_GetFlagStatus(TIM3_Flag_TypeDef TIM3_Flag)
+ 134          {
+ 135   1        FlagStatus status = RESET;
+ 136   1        TXINX = 0x03;
+ 137   1      
+ 138   1        if((TIM3_Flag & TXCON) != (uint8_t)RESET)
+ 139   1        {
+ 140   2          status = SET;
+ 141   2        }
+ 142   1        else
+ 143   1        {
+ 144   2          status = RESET;
+ 145   2        }
+ 146   1      
+ 147   1        return status;
+ 148   1      }
+ 149          
+ 150          /*****************************************************
+ 151          *函数名称:void TIM3_ClearFlag(TIM3_Flag_TypeDef TIM3_Flag)
+ 152          *函数功能:清除TIMER3中断标志状态
+ 153          *入口参数:
+ 154          TIM3_Flag_TypeDef:TIM3_Flag:TIMER3标志选择
+ 155          *出口参数:void
+ 156          *****************************************************/
+ 157          void TIM3_ClearFlag(TIM3_Flag_TypeDef TIM3_Flag)
+ 158          {
+ 159   1        TXINX = 0x03;
+ 160   1        TXCON &= (~TIM3_Flag);
+ 161   1      }
+ 162          
+ 163          #if defined (SC95F8x2x) || defined (SC95F7x2x) || defined(SC95F8x3x) || defined(SC95F7x3x) || defined (SC9
+             -5F8x6x) || defined (SC95F7x6x)\
+ 164                          || defined (SC95F8x1xB) || defined (SC95F7x1xB) || defined (SC95R751) || defined (SC95F7610B) || defined
+             - (SC95F7619B)
+ 165          /**************************************************
+ 166          *函数名称:void TIM3_TimeBaseInit(TIM3_CountMode_TypeDef TIM3_CountMode, TIM3_CountDirection_TypeDef TIM3_C
+             -ountDirection)
+ 167          *函数功能:TIM3基本设置配置函数
+ 168          *入口参数:
+ 169          TIM3_CountMode_TypeDef:TIM3_CountMode:计数/定时模式选择
+ 170          TIM3_CountDirection_TypeDef:TIM3_CountDirection:计数方向选择
+ 171          *出口参数:void
+ 172          **************************************************/
+C51 COMPILER V9.54   SC95F_TIMER3                                                          04/19/2023 15:54:51 PAGE 4   
+
+ 173          void TIM3_TimeBaseInit(TIM3_CountMode_TypeDef TIM3_CountMode,
+ 174                                 TIM3_CountDirection_TypeDef TIM3_CountDirection)
+ 175          {
+ 176   1        TXINX = 0x03;
+ 177   1      
+ 178   1        if(TIM3_CountMode == TIM3_MODE_TIMER)
+ 179   1        {
+ 180   2          TXCON &= 0XFD;
+ 181   2        }
+ 182   1        else
+ 183   1          if(TIM3_CountMode == TIM3_MODE_COUNTER)
+ 184   1          {
+ 185   2            TXCON |= 0X02;
+ 186   2          }
+ 187   1      
+ 188   1        /************************************************************/
+ 189   1        if(TIM3_CountDirection == TIM3_COUNTDIRECTION_UP)
+ 190   1        {
+ 191   2          TXMOD &= 0XFE;
+ 192   2        }
+ 193   1        else
+ 194   1          if(TIM3_CountDirection == TIM3_COUNTDIRECTION_DOWN_UP)
+ 195   1          {
+ 196   2            TXMOD |= 0X01;
+ 197   2          }
+ 198   1      }
+ 199          
+ 200          /**************************************************
+ 201          *函数名称:void TIM3_WorkMode0Config(uint16_t TIM3_SetCounter)
+ 202          *函数功能:TIMER3工作模式0配置函数
+ 203          *入口参数:
+ 204          uint16_t:TIM3_SetCounter:配置计数初值
+ 205          *出口参数:void
+ 206          **************************************************/
+ 207          void TIM3_WorkMode0Config(uint16_t TIM3_SetCounter)
+ 208          {
+ 209   1        TXINX = 0x03;
+ 210   1              CP = 1;
+ 211   1        TLX = TIM3_SetCounter % 256;
+ 212   1        THX = TIM3_SetCounter / 256;
+ 213   1      }
+ 214          /**************************************************
+ 215          *函数名称:void TIM3_WorkMode3Config(uint16_t TIM3_SetCounter)
+ 216          *函数功能:TIMER3工作模式3配置函数
+ 217          *入口参数:
+ 218          uint16_t:TIM3_SetCounter:配置计数初值
+ 219          *出口参数:void
+ 220          **************************************************/
+ 221          void TIM3_WorkMode3Config(uint16_t TIM3_SetCounter)
+ 222          {
+ 223   1        TXINX = 0x03;
+ 224   1        RCAPXL = TIM3_SetCounter % 256;
+ 225   1        RCAPXH = TIM3_SetCounter / 256;
+ 226   1        TXMOD |= 0X02;
+ 227   1      }
+ 228          /**************************************************
+ 229          *函数名称:void TIM3_WorkModeConfig(TIM3_WorkMode_TypeDef TIM3_WorkMode, uint16_t TIM3_SetCounter)
+ 230          *函数功能:TIMER3工作模式配置函数
+ 231          *入口参数:
+ 232          TIM3_WorkMode_TypeDef:TIM3_WorkMode:TIMER3工作模式选择
+ 233          uint16_t:TIM3_SetCounter:TIMER3计数初值配置
+ 234          *出口参数:void
+C51 COMPILER V9.54   SC95F_TIMER3                                                          04/19/2023 15:54:51 PAGE 5   
+
+ 235          **************************************************/
+ 236          void TIM3_WorkModeConfig(TIM3_WorkMode_TypeDef TIM3_WorkMode, uint16_t TIM3_SetCounter)
+ 237          {
+ 238   1        switch (TIM3_WorkMode)
+ 239   1        {
+ 240   2          case TIM3_WORK_MODE0:
+ 241   2            TIM3_WorkMode0Config(TIM3_SetCounter);
+ 242   2            break;
+ 243   2      
+ 244   2          case TIM3_WORK_MODE1:
+ 245   2            TIM3_WorkMode1Config(TIM3_SetCounter);
+ 246   2            break;
+ 247   2      
+ 248   2          case TIM3_WORK_MODE3:
+ 249   2            TIM3_WorkMode3Config(TIM3_SetCounter);
+ 250   2            break;
+ 251   2      
+ 252   2          default:
+ 253   2            break;
+ 254   2        }
+ 255   1      }
+ 256          /*****************************************************
+ 257          *函数名称:void TIM3_SetEXEN3(FunctionalState NewState)
+ 258          *函数功能:TIMER3_EXEN3配置函数
+ 259          *入口参数:
+ 260          FunctionalState:NewState:EXEN3使能选择
+ 261          *出口参数:void
+ 262          *****************************************************/
+ 263          void TIM3_SetEXEN3(FunctionalState NewState)
+ 264          {
+ 265   1        TXINX = 0x03;
+ 266   1      
+ 267   1        if (NewState == DISABLE)
+ 268   1        {
+ 269   2          EXENX = 0;
+ 270   2        }
+ 271   1        else
+ 272   1        {
+ 273   2          EXENX = 1;
+ 274   2        }
+ 275   1      }
+ 276          
+ 277          #endif
+ 278          
+ 279          /******************* (C) COPYRIGHT 2020 SinOne Microelectronics *****END OF FILE****/
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    285    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

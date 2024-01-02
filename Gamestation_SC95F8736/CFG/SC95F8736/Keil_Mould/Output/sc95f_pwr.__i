@@ -1,0 +1,1 @@
+"..\FWLib\SC95F_Lib\src\sc95f_pwr.c" OMF2 BROWSE INCDIR(..\FWLib\SC95F_Lib\inc;..\User) DEFINE (SC95F8x2x) DEBUG PRINT(..\List\sc95f_pwr.lst) OBJECT(..\Output\sc95f_pwr.obj)

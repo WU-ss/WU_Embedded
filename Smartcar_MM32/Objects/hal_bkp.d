@@ -1,0 +1,15 @@
+.\objects\hal_bkp.o: MN32_HAL\hal_bkp.c
+.\objects\hal_bkp.o: .\Include\types.h
+.\objects\hal_bkp.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\hal_bkp.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdbool.h
+.\objects\hal_bkp.o: MN32_HAL\hal_pwr.h
+.\objects\hal_bkp.o: .\Include\reg_pwr.h
+.\objects\hal_bkp.o: MN32_HAL\hal_rcc.h
+.\objects\hal_bkp.o: .\Include\reg_common.h
+.\objects\hal_bkp.o: .\Include\core_cm0.h
+.\objects\hal_bkp.o: .\Include\cmsis_compiler.h
+.\objects\hal_bkp.o: .\Include\cmsis_armcc.h
+.\objects\hal_bkp.o: .\Include\reg_adc.h
+.\objects\hal_bkp.o: .\Include\reg_rcc.h
+.\objects\hal_bkp.o: MN32_HAL\hal_bkp.h
+.\objects\hal_bkp.o: .\Include\reg_bkp.h

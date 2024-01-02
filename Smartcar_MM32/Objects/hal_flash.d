@@ -1,0 +1,10 @@
+.\objects\hal_flash.o: MN32_HAL\hal_flash.c
+.\objects\hal_flash.o: MN32_HAL\hal_flash.h
+.\objects\hal_flash.o: .\Include\types.h
+.\objects\hal_flash.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\hal_flash.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdbool.h
+.\objects\hal_flash.o: .\Include\reg_common.h
+.\objects\hal_flash.o: .\Include\core_cm0.h
+.\objects\hal_flash.o: .\Include\cmsis_compiler.h
+.\objects\hal_flash.o: .\Include\cmsis_armcc.h
+.\objects\hal_flash.o: .\Include\reg_flash.h

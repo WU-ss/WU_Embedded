@@ -1,0 +1,114 @@
+C51 COMPILER V9.54   SCDRIVER_JOYSTICK                                                     04/19/2023 15:54:51 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE SCDRIVER_JOYSTICK
+OBJECT MODULE PLACED IN ..\Output\SCDriver_Joystick.obj
+COMPILER INVOKED BY: D:\Keil5\C51\BIN\C51.EXE ..\Drivers\SCDriver_Joystick\C\SCDriver_Joystick.c LARGE OBJECTADVANCED OP
+                    -TIMIZE(8,SIZE) BROWSE INCDIR(..\FWLib\SC95F_Lib\inc;..\User;..\Bank1;..\Bank2;..\Bank3) DEFINE(SC95F8x3x) DEBUG PRINT(..
+                    -\List\SCDriver_Joystick.lst) OBJECT(..\Output\SCDriver_Joystick.obj)
+
+line level    source
+
+   1          //************************************************************
+   2          //  Copyright (c) 
+   3          //      文件名称        : SCDriver_Joystick.C
+   4          //      作者            : Andy
+   5          //      模块功能        : 摇杆应用驱动库源文件
+   6          //  最后更正日期: 2019/4/16
+   7          //      版本            : V0.1 
+   8          //  说明        ：驱动库进行多次ADC电压采样，首次的电压转换值会被忽略，
+   9          //                                同时舍弃电压最大值与最小值后求取平均值，来回切换x,y两个通道获得坐标值  
+  10          //*************************************************************
+  11          #include "..\H\SCDriver_Joystick.h"
+  12          #include "SC_Init.h"
+  13          unsigned char SCD_Joystick_PosX;
+  14          unsigned char SCD_Joystick_PosY; 
+  15          
+  16          #define  SCD_Joystick_CLOCK             0x01       //ADC的时钟频率，与采样时间成正比关系
+  17          #define  SCD_Joystick_CYCLE             0x00      //ADC采样时钟周期，与采样时间成正比关系
+  18          #define  SCD_Joystick_SAMPLING_NUM  6                                          //ADC采样次数，需大于2，小于16。
+  19          unsigned int code PositionTab[]={0,1000,2200,4095};
+  20          
+  21          void SCD_Joystick_Init(void)
+  22          {
+  23   1              ADC_Init(SCD_Joystick_CLOCK, SCD_Joystick_CYCLE);
+*** WARNING C259 IN LINE 23 OF ..\Drivers\SCDriver_Joystick\C\SCDriver_Joystick.c: 'parameter 1': different enumeration 
+             -types
+  24   1              ADC_ITConfig(DISABLE, LOW);
+  25   1              ADC_Cmd(ENABLE);                
+  26   1      }
+  27          
+  28          unsigned int SCD_Joystick_GetConversionValue(ADC_Channel_TypeDef ADC_Channel)
+  29          {
+  30   1              unsigned char i;
+  31   1              unsigned int SCD_Joystick_MaxValue = 0, SCD_Joystick_MinValue = 4096;
+  32   1              unsigned int SCD_Joystick_Value = 0, SCD_Joystick_ValueSum = 0;
+  33   1                
+  34   1              ADC_ChannelConfig(ADC_Channel, ENABLE);
+  35   1              ADC_StartConversion();
+  36   1              while(!ADC_GetFlagStatus());
+  37   1              ADC_ClearFlag();
+  38   1              
+  39   1              for(i=0; i<SCD_Joystick_SAMPLING_NUM; i++)
+  40   1              {
+  41   2                      ADC_StartConversion();
+  42   2                      while(!ADC_GetFlagStatus());
+  43   2                      ADC_ClearFlag();
+  44   2                      SCD_Joystick_Value = ADC_GetConversionValue();
+  45   2      
+  46   2                      if(SCD_Joystick_Value >= SCD_Joystick_MaxValue)
+  47   2                      {
+  48   3                              SCD_Joystick_MaxValue = SCD_Joystick_Value;     
+  49   3                      }
+  50   2                      if(SCD_Joystick_Value <= SCD_Joystick_MinValue)
+  51   2                      {
+C51 COMPILER V9.54   SCDRIVER_JOYSTICK                                                     04/19/2023 15:54:51 PAGE 2   
+
+  52   3                              SCD_Joystick_MinValue = SCD_Joystick_Value;
+  53   3                      }
+  54   2                      SCD_Joystick_ValueSum += SCD_Joystick_Value;
+  55   2              }
+  56   1              
+  57   1              SCD_Joystick_Value = (SCD_Joystick_ValueSum - SCD_Joystick_MaxValue - SCD_Joystick_MinValue) / (SCD_Joyst
+             -ick_SAMPLING_NUM - 2);
+  58   1                      
+  59   1              return SCD_Joystick_Value; 
+  60   1      }
+  61          
+  62          
+  63          unsigned int PositionTrans(unsigned int ADValue)
+  64          {
+  65   1              unsigned int i;
+  66   1              for(i=0;i<3;i++)
+  67   1              {
+  68   2                      if((ADValue>PositionTab[i])&&(ADValue<=PositionTab[i+1]))
+  69   2                      {
+  70   3                              return i;
+  71   3                      }
+  72   2              }
+  73   1              return 0;
+  74   1      }
+  75          
+  76          void SCD_Joystick_GetPosition()
+  77          {
+  78   1              SCD_Joystick_PosX = PositionTrans(SCD_Joystick_GetConversionValue(SCD_Joystick_PinX)); //获得X转换值
+  79   1              SCD_Joystick_PosY = PositionTrans(SCD_Joystick_GetConversionValue(SCD_Joystick_PinY)); //获得Y转换值
+  80   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    366    ----
+   CONSTANT SIZE    =      8    ----
+   XDATA SIZE       =      2       9
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)

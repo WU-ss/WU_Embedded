@@ -1,0 +1,199 @@
+C51 COMPILER V9.54   SC95F_ADC                                                             04/19/2023 15:54:51 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE SC95F_ADC
+OBJECT MODULE PLACED IN ..\Output\sc95f_adc.obj
+COMPILER INVOKED BY: D:\Keil5\C51\BIN\C51.EXE ..\FWLib\SC95F_Lib\src\sc95f_adc.c LARGE OBJECTADVANCED OPTIMIZE(8,SIZE) B
+                    -ROWSE INCDIR(..\FWLib\SC95F_Lib\inc;..\User;..\Bank1;..\Bank2;..\Bank3) DEFINE(SC95F8x3x) DEBUG PRINT(..\List\sc95f_adc.
+                    -lst) OBJECT(..\Output\sc95f_adc.obj)
+
+line level    source
+
+   1          //************************************************************
+   2          //  Copyright (c) 
+   3          //      文件名称:                       sc95f_adc.c
+   4          //      作者:                                   赛元应用团队
+   5          //      模块功能:                       BTM固件库函数C文件
+   6          //  最后更正日期:       2022年3月23日
+   7          //      版本:                                   V1.10001
+   8          //  说明: 
+   9          //*************************************************************
+  10          #include "sc95f_adc.h"
+  11          
+  12          /**************************************************
+  13          *函数名称:void ADC_DeInit(void)
+  14          *函数功能:ADC相关寄存器复位至缺省值
+  15          *入口参数:void
+  16          *出口参数:void
+  17          **************************************************/
+  18          void ADC_DeInit(void)
+  19          {
+  20   1        ADCCON = 0x00;
+  21   1        ADCCFG0 = 0X00;
+  22   1        ADCCFG1 = 0X00;
+  23   1        ADCCFG2 = 0X00;
+  24   1        ADCVL = 0X00;
+  25   1        ADCVH = 0X00;
+  26   1        EADC = 0;
+  27   1        IPADC = 0;
+  28   1      }
+  29          
+  30          /**************************************************
+  31          *函数名称:void ADC_Init(ADC_PresSel_TypeDef ADC_PrescalerSelection,ADC_Cycle_TypeDef ADC_Cycle)
+  32          *函数功能:ADC初始化配置函数
+  33          *入口参数:
+  34          ADC_PresSel_TypeDef:ADC_PrescalerSelection:ADC预分频选择
+  35          ADC_Cycle_TypeDef:ADC_Cycle:采样时间选择
+  36          *出口参数:void
+  37          **************************************************/
+  38          void ADC_Init(ADC_PresSel_TypeDef ADC_PrescalerSelection, ADC_Cycle_TypeDef ADC_Cycle)
+  39          {
+  40   1              /* 配置ADC采样时钟分频 */
+  41   1        ADCCFG2 = ADC_PrescalerSelection;
+  42   1              /* 该入参在95F系列无效 */
+  43   1        ADC_Cycle = 0x00; 
+  44   1      }
+  45          
+  46          /**************************************************
+  47          *函数名称:void ADC_ChannelConfig(ADC_Channel_TypeDef ADC_Channel, FunctionalState NewState)
+  48          *函数功能:ADC输入口配置函数
+  49          *入口参数:
+  50          ADC_Channel_TypeDef:ADC_Channel:ADC输入口选择
+  51          FunctionalState:NewState:ADCx使能/关闭选择
+  52          *出口参数:void
+  53          **************************************************/
+C51 COMPILER V9.54   SC95F_ADC                                                             04/19/2023 15:54:51 PAGE 2   
+
+  54          void ADC_ChannelConfig(ADC_Channel_TypeDef ADC_Channel, FunctionalState NewState)
+  55          {
+  56   1        uint16_t tmpreg;
+  57   1      
+  58   1              /* ADC采样通道选择外部通道，将对应的ADC输入口设置为模拟输入模式 */
+  59   1        if (ADC_Channel < ADC_CHANNEL_VDD_D4)
+  60   1        {
+  61   2                      tmpreg = (0x0001 << ADC_Channel);                       //通过移位得到ADCCFG寄存器·配置值
+  62   2          if (NewState == DISABLE)
+  63   2          {
+  64   3                              /* ADC输入口退出模拟输入模式 */
+  65   3            ADCCFG0 &= (~(uint8_t)tmpreg);
+  66   3            ADCCFG1 &= (~(uint8_t)(tmpreg >> 8));
+  67   3          }
+  68   2          else
+  69   2          {
+  70   3                              /* ADC输入口设置为模拟输入模式 */
+  71   3            ADCCFG0 |= ((uint8_t)tmpreg);
+  72   3            ADCCFG1 |= ((uint8_t)(tmpreg >> 8));
+  73   3          }
+  74   2        }
+  75   1              
+  76   1              /* 配置ADC采样时钟分频 */
+  77   1        ADCCON = (ADCCON & 0XE0) | ADC_Channel;
+  78   1      }
+  79          
+  80          /**************************************************
+  81          *函数名称:void ADC_EAINConfig(ADC_EAIN_TypeDef ADC_Channel, FunctionalState NewState)
+  82          *函数功能:将对应的ADC输入口设置为模拟输入模式
+  83          *入口参数:
+  84          ADC_EAIN_TypeDef:ADC_EAIN_Select:选择需要设置的ADC口（uint16_t作为入参，方便进行位或操作）
+  85          FunctionalState:NewState:ADC通道使能/关闭选择
+  86          *出口参数:void
+  87          **************************************************/
+  88          void ADC_EAINConfig(uint16_t ADC_EAIN_Select, FunctionalState NewState)
+  89          {
+  90   1        if (NewState == DISABLE)
+  91   1        {
+  92   2                      /* ADC输入口退出模拟输入模式 */
+  93   2          ADCCFG0 &= (~(uint8_t)ADC_EAIN_Select);
+  94   2          ADCCFG1 &= (~(uint8_t)(ADC_EAIN_Select >> 8));
+  95   2        }
+  96   1        else
+  97   1        {
+  98   2                      /* ADC输入口设置为模拟输入模式 */
+  99   2          ADCCFG0 |= ((uint8_t)ADC_EAIN_Select);
+ 100   2          ADCCFG1 |= ((uint8_t)(ADC_EAIN_Select >> 8));
+ 101   2        }
+ 102   1      }
+ 103          
+ 104          /*****************************************************
+ 105          *函数名称:uint16_t ADC_GetConversionValue(void)
+ 106          *函数功能:获得一次AD转换数据
+ 107          *入口参数:void
+ 108          *出口参数:uint16_t
+ 109          *****************************************************/
+ 110          uint16_t ADC_GetConversionValue(void)
+ 111          {
+ 112   1              return ((ADCVH << 4) + (ADCVL >> 4));
+ 113   1      }
+ 114          
+ 115          /*****************************************************
+C51 COMPILER V9.54   SC95F_ADC                                                             04/19/2023 15:54:51 PAGE 3   
+
+ 116          *函数名称:void ADC_Cmd(FunctionalState NewState)
+ 117          *函数功能:ADC功能开关函数
+ 118          *入口参数:
+ 119          FunctionalState:NewState:功能启动/关闭选择
+ 120          *出口参数:void
+ 121          *****************************************************/
+ 122          void ADC_Cmd(FunctionalState NewState)
+ 123          {
+ 124   1              /* 使能/失能ADC功能 */
+ 125   1        if (NewState == DISABLE)
+ 126   1        {
+ 127   2          ADCCON &= 0X7F;
+ 128   2        }
+ 129   1        else
+ 130   1        {
+ 131   2          ADCCON |= 0x80;
+ 132   2        }
+ 133   1      }
+ 134          
+ 135          /*****************************************************
+ 136          *函数名称:void ADC_VrefConfig(ADC_Vref_TypeDef ADC_Vref)
+ 137          *函数功能:配置ADC的参考电压
+ 138          *入口参数:
+ 139          ADC_Vref_TypeDef:ADC_Vref:选择ADC参考电压
+ 140          *出口参数:void
+ 141          *****************************************************/
+ 142          void ADC_VrefConfig(ADC_Vref_TypeDef ADC_Vref)
+ 143          {
+ 144   1        OPINX = 0xC2;
+ 145   1      
+ 146   1        if (ADC_Vref == ADC_VREF_2_048V)
+ 147   1        {
+ 148   2          OPREG &= 0x3f;
+ 149   2          OPREG |= 0x40; //选择参考内部电压2.048V。
+ 150   2        }
+ 151   1      
+ 152   1        if (ADC_Vref == ADC_VREF_1_024V)
+ 153   1        {
+ 154   2          OPREG &= 0x3f;
+ 155   2          OPREG |= 0x80; //选择参考内部电压1.024V。
+ 156   2        }
+ 157   1      
+ 158   1        if (ADC_Vref == ADC_VREF_VDD)
+ 159   1        {
+ 160   2          OPREG &= 0x3f; //选择参考电压VDD。
+ 161   2        }
+ 162   1      }
+ 163          
+ 164          /******************* (C) COPYRIGHT 2022 SinOne Microelectronics *****END OF FILE****/
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    182    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+C51 COMPILER V9.54   SC95F_ADC                                                             04/19/2023 15:54:51 PAGE 4   
+
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

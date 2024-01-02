@@ -1,0 +1,218 @@
+C51 COMPILER V9.01   SC95F_ADC                                                             09/07/2020 16:59:31 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE SC95F_ADC
+OBJECT MODULE PLACED IN ..\Output\sc95f_adc.obj
+COMPILER INVOKED BY: E:\Keil\C51\BIN\C51.EXE ..\FWLib\SC95F_Lib\src\sc95f_adc.c OMF2 BROWSE INCDIR(..\FWLib\SC95F_Lib\in
+                    -c;..\User) DEFINE(SC95F8x2x) DEBUG PRINT(..\List\sc95f_adc.lst) OBJECT(..\Output\sc95f_adc.obj)
+
+line level    source
+
+   1          //************************************************************
+   2          //  Copyright (c) 深圳市赛元微电子有限公司
+   3          //      文件名称        : sc95f_adc.c
+   4          //      作者            : 
+   5          //      模块功能        : ADC固件库函数C文件
+   6          //      局部函数列表:
+   7          //  最后更正日期: 2020/8/13
+   8          //      版本            : V1.0 
+   9          //  说明        ：该文件仅适用于SC95Fxx1x、SC95Fxx2x系列芯片    
+  10          //*************************************************************
+  11          
+  12          #include "sc95f_adc.h"
+  13          
+  14          /**************************************************
+  15          *函数名称：void ADC_DeInit(void)
+  16          *函数功能：ADC相关寄存器复位至缺省值
+  17          *入口参数：void
+  18          *出口参数：void
+  19          **************************************************/
+  20          void ADC_DeInit(void)
+  21          {
+  22   1              ADCCON = 0x00;
+  23   1              ADCCFG0 = 0X00;
+  24   1              ADCCFG1 = 0X00;
+  25   1              ADCCFG2 = 0X00;
+  26   1              ADCVL = 0X00;
+  27   1              ADCVH = 0X00;
+  28   1              EADC = 0;
+  29   1              IPADC = 0;
+  30   1      }
+  31          
+  32          /**************************************************
+  33          *函数名称：void ADC_Init(ADC_PresSel_TypeDef ADC_PrescalerSelection,ADC_Cycle_TypeDef ADC_Cycle)
+  34          *函数功能：ADC初始化配置函数
+  35          *入口参数：ADC_Cycle            采样时间选择
+  36          *出口参数：void
+  37          **************************************************/
+  38          void ADC_Init(ADC_PresSel_TypeDef ADC_PrescalerSelection,ADC_Cycle_TypeDef ADC_Cycle)
+  39          {       
+  40   1              ADCCFG2 = ADC_Cycle;    
+  41   1              if(ADC_PrescalerSelection);     //该入参在95F系列无效
+  42   1      }
+  43          
+  44          /**************************************************
+  45          *函数名称：void ADC_ChannelConfig(ADC_Channel_TypeDef ADC_Channel, FunctionalState NewState)
+  46          *函数功能：ADC输入口配置函数
+  47          *入口参数：ADC_Channel                           ADC输入口选择
+  48                             FunctionalState NewState      ADCx使能/关闭选择      
+  49          *出口参数：void
+  50          **************************************************/
+  51          void ADC_ChannelConfig(ADC_Channel_TypeDef ADC_Channel, FunctionalState NewState)
+  52          {
+  53   1              uint16_t tmpreg;
+  54   1      
+C51 COMPILER V9.01   SC95F_ADC                                                             09/07/2020 16:59:31 PAGE 2   
+
+  55   1              ADCCON = (ADCCON & 0XE0) | ADC_Channel;
+  56   1              tmpreg = (0x0001 << ADC_Channel);
+  57   1      
+  58   1              if(ADC_Channel < ADC_CHANNEL_VDD_D4)
+  59   1              {
+  60   2                      if(NewState == DISABLE)
+  61   2                      {
+  62   3                              ADCCFG0 &= (~(uint8_t)tmpreg);
+  63   3                              ADCCFG1 &= (~(uint8_t)(tmpreg>>8));     
+  64   3                      }
+  65   2                      else
+  66   2                      {
+  67   3                              ADCCFG0 |= ((uint8_t)tmpreg);
+  68   3                              ADCCFG1 |= ((uint8_t)(tmpreg>>8));
+  69   3                      }
+  70   2              }               
+  71   1      }
+  72          /**************************************************
+  73          *函数名称：void ADC_EAINConfig(ADC_EAIN_TypeDef ADC_Channel, FunctionalState NewState)
+  74          *函数功能：将对应的ADC输入口设置为模拟输入模式
+  75          *入口参数：ADC_EAIN_Select                   选择需要设置的ADC口
+  76                             FunctionalState NewState      ADC通道使能/关闭选择   
+  77          *出口参数：void
+  78          **************************************************/
+  79          void ADC_EAINConfig(uint16_t ADC_EAIN_Select, FunctionalState NewState)
+  80          {
+  81   1              if(NewState == DISABLE)
+  82   1              {
+  83   2                      ADCCFG0 &= (~(uint8_t)ADC_EAIN_Select);
+  84   2                      ADCCFG1 &= (~(uint8_t)(ADC_EAIN_Select>>8));    
+  85   2              }
+  86   1              else
+  87   1              {
+  88   2                      ADCCFG0 |= ((uint8_t)ADC_EAIN_Select);
+  89   2                      ADCCFG1 |= ((uint8_t)(ADC_EAIN_Select>>8));
+  90   2              }
+  91   1      }
+  92          /*****************************************************
+  93          *函数名称：void ADC_Cmd(FunctionalState NewState)
+  94          *函数功能：ADC功能开关函数
+  95          *入口参数：FunctionalState NewState     功能启动/关闭选择
+  96          *出口参数：void
+  97          *****************************************************/
+  98          void ADC_Cmd(FunctionalState NewState)
+  99          {
+ 100   1              if(NewState == DISABLE)
+ 101   1              {
+ 102   2                      ADCCON &= 0X7F;
+ 103   2              }
+ 104   1              else
+ 105   1              {
+ 106   2                      ADCCON |= 0x80;
+ 107   2              }       
+ 108   1      }
+ 109          
+ 110          /*****************************************************
+ 111          *函数名称：void ADC_StartConversion(void)
+ 112          *函数功能：开始一次AD转换
+ 113          *入口参数：void
+ 114          *出口参数：void
+ 115          *****************************************************/
+ 116          void ADC_StartConversion(void)
+C51 COMPILER V9.01   SC95F_ADC                                                             09/07/2020 16:59:31 PAGE 3   
+
+ 117          {
+ 118   1              ADCCON |= 0X40;
+ 119   1      }
+ 120          
+ 121          /*****************************************************
+ 122          *函数名称：uint16_t ADC_GetConversionValue(void)
+ 123          *函数功能：获得一次AD转换数据
+ 124          *入口参数：void
+ 125          *出口参数：uint16_t
+ 126          *****************************************************/
+ 127          uint16_t ADC_GetConversionValue(void)
+ 128          {
+ 129   1              uint16_t temp;
+ 130   1              temp = (uint16_t)(ADCVH<<4) + (ADCVL>>4);
+ 131   1              return temp;
+ 132   1      }
+ 133          
+ 134          /*****************************************************
+ 135          *函数名称：void ADC_ITConfig(FunctionalState NewState, PriorityStatus Priority)
+ 136          *函数功能：ADC中断初始化
+ 137          *入口参数：FunctionalState NewState     中断使能/关闭选择
+ 138                             PriorityStatus Priority      中断优先级选择
+ 139          *出口参数：void
+ 140          *****************************************************/
+ 141          void ADC_ITConfig(FunctionalState NewState, PriorityStatus Priority)
+ 142          {
+ 143   1          if(NewState == DISABLE)
+ 144   1          {
+ 145   2             EADC = 0;
+ 146   2          }
+ 147   1          else
+ 148   1          {
+ 149   2             EADC = 1;
+ 150   2          }
+ 151   1      /************************************************************/
+ 152   1              if(Priority == LOW)
+ 153   1              {
+ 154   2                      IPADC = 0;
+ 155   2              }
+ 156   1              else
+ 157   1              {
+ 158   2                      IPADC = 1;
+ 159   2              }
+ 160   1      }
+ 161          
+ 162          /*****************************************************
+ 163          *函数名称：FlagStatus ADC_GetFlagStatus(void)
+ 164          *函数功能：获得ADC中断标志状态
+ 165          *入口参数：void
+ 166          *出口参数：FlagStatus   ADC中断标志状态 
+ 167          *****************************************************/
+ 168          FlagStatus ADC_GetFlagStatus(void)
+ 169          {
+ 170   1              return (FlagStatus)(ADCCON & 0x20);
+ 171   1      }
+ 172          
+ 173          /*****************************************************
+ 174          *函数名称：void ADC_ClearFlag(void)
+ 175          *函数功能：清除ADC中断标志状态
+ 176          *入口参数：void
+ 177          *出口参数：void 
+ 178          *****************************************************/
+C51 COMPILER V9.01   SC95F_ADC                                                             09/07/2020 16:59:31 PAGE 4   
+
+ 179          void ADC_ClearFlag(void)
+ 180          {
+ 181   1         ADCCON &= 0xdf;
+ 182   1      }
+ 183          
+ 184          /******************* (C) COPYRIGHT 2020 SinOne Microelectronics *****END OF FILE****/
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    158    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
